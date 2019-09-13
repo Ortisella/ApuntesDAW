@@ -37,3 +37,14 @@
     git pull origin master
     ```
 
+### Añadir clave SSH a GitHub
+
+En primer lugar generamos una clave. De todo lo que nos pide, sólo introducimos nuestro email, lo demás todo con intros vacias:   
+```   
+ssh-keygen -t rsa -b 4096 -C "tucorreo@gmail.com"
+```
+Una vez generada la clave, la copiamos al portapapeles. Para ello, mostramos la clave por la consola del sistema, y luego la copiamos:
+```
+cat ~/.ssh/id_rsa.pub
+```
+
