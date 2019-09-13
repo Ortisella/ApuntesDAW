@@ -39,13 +39,31 @@
 
 ### Añadir clave SSH a GitHub
 
-En primer lugar generamos una clave. De todo lo que nos pide, sólo introducimos nuestro email, lo demás todo con intros vacias:   
-```   
-ssh-keygen -t rsa -b 4096 -C "tucorreo@gmail.com"
-```
-Una vez generada la clave, la copiamos al portapapeles. Para ello, mostramos la clave por la consola del sistema, y luego la copiamos:
-```
-cat ~/.ssh/id_rsa.pub
-```
-Para que sea efectivo, tendremos que cerrar sesión y volver a entrar. 
-
+- En primer lugar generamos una clave. De todo lo que nos pide, sólo introducimos nuestro email, lo demás todo con intros vacias:     
+    ```   
+    ssh-keygen -t rsa -b 4096 -C "tucorreo@gmail.com"
+    ```
+- Una vez generada la clave, la copiamos al portapapeles. Para ello, mostramos la clave por la consola del sistema, y luego la copiamos a Edit user - Settings - SSH and PGP keys de la página GitHub:
+    ```
+    cat ~/.ssh/id_rsa.pub
+    ```
+- Instalamos openssh-server:
+    ```
+    sudo apt install openssh-server
+    ```
+- Arrancamos el agente SSH en segundo plano: 
+    ```
+    eval "$(ssh-agent -s)"
+    ```
+- Añadimos la clave al agente:
+    ```
+    ssh-add ~/.ssh/id_rsa
+    ```
+- Hay que cambiar la url para que admita git+ssh en vez de https, para ello vemos cuál es nuestra url origin, la url que apunta al repositorio:
+    ```
+    git remote show origin
+    ```
+- De ahi cogemos la dirección y la usamos con:
+    ```
+    git remote set-url origin git+ssh://"url"
+    ```
