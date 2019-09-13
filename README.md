@@ -47,4 +47,5 @@ Una vez generada la clave, la copiamos al portapapeles. Para ello, mostramos la 
 ```
 cat ~/.ssh/id_rsa.pub
 ```
+Para que sea efectivo, tendremos que cerrar sesión y volver a entrar. 
 
