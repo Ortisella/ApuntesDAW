@@ -31,7 +31,7 @@
     git clone "url"
     ```
     La url se obtiene en el repositorio, clicando el botón "clone or download" y coger la clave en SSH en vez de HTTPS. 
-    
+
 - Ver estado del repositorio local
     ```
     git status
