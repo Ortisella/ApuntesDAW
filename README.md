@@ -1,6 +1,16 @@
 # daw2-daw-1920
 
-## Clase 1
+## Crear usuario en Ubuntu
+
+- Añadimos el nombre que tendrá el usuario:
+    ```
+    sudo adduser [nombre del usuario]
+    ```
+- Hacer un superusuario del usuario:
+    ```
+    sudo usermod -aG sudo [nombre del usuario]
+
+## Crear cuenta en GitHub
 
 - Crear una cuenta en GitHub
 - Crear un nuevo repositorio: daw2-daw-1920
@@ -20,6 +30,8 @@
     ```
     git clone "url"
     ```
+    La url se obtiene en el repositorio, clicando el botón "clone or download" y coger la clave en SSH en vez de HTTPS. 
+    
 - Ver estado del repositorio local
     ```
     git status
