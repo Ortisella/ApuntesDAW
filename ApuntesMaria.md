@@ -1,94 +1,110 @@
-# daw2-daw-1920
+# APUNTES: DESARROLLO DE APLICACIONES WEB
 
-## Crear usuario en Ubuntu
 
-- Añadimos el nombre que tendrá el usuario:
-    ```
-    sudo adduser [nombre del usuario]
-    ```
-- Hacer un superusuario del usuario:
-    ```
-    sudo usermod -aG sudo [nombre del usuario]
+## Índice
+- [MARKDOWN CHEATSHEET](#markdown-cheatsheet)
+    - [Enlaces internos](#enlaces-internos)
+    - [Títulos](#títulos)
+    - [Énfasis](#énfasis)
+    - [Listados](#listados)
 
-## Crear cuenta en GitHub
+- [FUNCIONAMIENTO DE GIT](#funcionamiento-de-git)
 
-- Crear una cuenta en GitHub
-- Crear un nuevo repositorio: daw2-daw-1920
-- Instalar git 
-- Si aparece un error _"no se pudo bloquear /var/lib/dpkg/lock"_ ..., introducir la siguiente instrucción:
-    ```
-    sudo fuser -vki /var/lib/dpkg/lock
-    ```
-    y volver a instalar git:
+- [ÁREA DE TRABAJO EN UBUNTU](#área-de-trabajo-en-ubuntu)
+    - [Crear usuario](#crear-usuario)
+    - [Instrucciones básicas de terminal](#instrucciones-básicas-de-terminal)
+    - [Instalación de Visual Studio Code](#instalación-de-visual-studio-code)
 
-    ```
-    sudo apt install git
-    ```
-### Instrucciones básicas git
+- [TRABAJO EN ENTORNO VIRTUALIZADO](#trabajo-en-entorno-virtualizado)
+    - [Instalación de VirtualBox](#instalación-de-virtualbox)
+    
+---
+---
+## Markdown cheatsheet
 
-- Clonar el repositorio remoto:
-    ```
-    git clone "url"
-    ```
-    La url se obtiene en el repositorio, clicando el botón "clone or download" y coger la clave en SSH en vez de HTTPS. 
 
-- Ver estado del repositorio local
-    ```
-    git status
-    ```
-- Hacer un *commit* (comprometer) los cambios al repositorio local
-    ```
-    git commit -am "mensaje"
-    ```
-- Subir (push) los cambios del repositorio local al repositorio remoto:
-    ```
-    git push origin master
-    ```
-- Actualizar (pull) el repositorio local con los cambios desde el repositorio remoto
-    ```
-    git pull origin master
-    ```
+### __Títulos__
+Se escriben # delante del título. La correspondencia es de: # H1, ## H2, ### H3, #### H4, ##### H5, ###### H6
 
-### Añadir clave SSH a GitHub
+### __Enlaces internos__
+Para poner enlaces como en un índice que referencien secciones del documento se escribe entre [] el nombre del enlace y entre () el nombre de ese enlace sustituyendo los espacios por guiones y con un # delante. Hay que tener cuidado porque los acentos sí se aceptan en (). Luego los títulos se deberán llamar tal cual el enlace. Ejemplo:
+```
+[Título de la sección](#título-de-la-sección)
+```
 
-- En primer lugar generamos una clave. De todo lo que nos pide, sólo introducimos nuestro email, lo demás todo con intros vacias:     
-    ```   
-    ssh-keygen -t rsa -b 4096 -C "tucorreo@gmail.com"
-    ```
-- Una vez generada la clave, la copiamos al portapapeles. Para ello, mostramos la clave por la consola del sistema, y luego la copiamos a Edit user - Settings - SSH and PGP keys de la página GitHub:
-    ```
-    cat ~/.ssh/id_rsa.pub
-    ```
-- Instalamos openssh-server:
-    ```
-    sudo apt install openssh-server
-    ```
-- Arrancamos el agente SSH en segundo plano: 
-    ```
-    eval "$(ssh-agent -s)"
-    ```
-- Añadimos la clave al agente:
-    ```
-    ssh-add ~/.ssh/id_rsa
-    ```
-- Hay que cambiar la url para que admita git+ssh en vez de https, para ello vemos cuál es nuestra url origin, la url que apunta al repositorio:
-    ```
-    git remote show origin
-    ```
-- De ahi cogemos la dirección y la usamos con:
-    ```
-    git remote set-url origin git+ssh://"url"
-    ```
+### __Énfasis__
+- Negrita: ```**palabra**``` o ```__palabra__``` : __palabra__ 
+- Cursiva: ```*palabra*``` o ```_palabra_``` : *palabra*
+- Tachado: ```~~palabra~~``` : ~~palabra~~
 
-## Instalación de virtualbox
+### __Listados__
+- ```*```, ```-```, ```+``` para listas sin ordenar.
+- Números seguidos de un punto para listas ordenadas: ```1.```...  ```2.```...
+- Para listados dentro de algún punto se hace con tabulación.  
 
-- Primero instalamos las dependencias: 
-    ```
-    sudo apt install libcurl4 libqt5opengl5 libqt5printsupport5
-    ```
-- Descargamos VirtualBox y el *extension pack* desde la página de descargas de www.virtualbox.org
-- Ejecutamos el archivo .deb descargado:
-    ```
-    sudo dpkg -i "archivo .deb"
-    ```
+---
+---
+## Área de trabajo en Ubuntu
 
+
+### __Crear usuario__
+Después de la instalación del sistema, en la terminal añadiremos el nombre que tendrá el nuevo usuario personalizado:
+```
+sudo adduser {nombre del usuario}
+```
+Ahora necesitamos hacer un superusuario del usuario. Para que se haga efectivo tenemos que cerrar después la sesión:
+```
+sudo usermod -aG sudo {nombre del usuario}
+```
+
+### __Instrucciones básicas de terminal__
+- ```ls``` lista el directorio en el que estamos.
+- ```ls -l``` lista el directorio en el que estamos pero con más detalle.
+- ```ls -al``` lista con detalle todo lo del directorio en el que estamos, incluso lo oculto.
+- ```clear``` limpia la vista de la terminal, borra todo lo escrito hasta ahora.
+- ```mkdir {nombre de la carpeta}``` crea una carpeta.
+- ```cd {nombre de la carpeta}``` para entrar en una carpeta.
+- ```cd ..``` para volver a la carpeta anterior en el directorio. 
+- ```cd /``` para volver a la carpeta raíz del sistema.
+- ```sudo dpkg -i {nombre del archivo a instalar}``` para instalar un archivo ya descargado en el equipo.
+- Pulsar *ctrl+c* para parar todo lo que esté ejecutando el terminal. 
+- ```unzip {nombre del archivo}``` para descomprimir un archivo por terminal.
+- ```cat {nombre del archivo}``` lee por consola el archivo indicado.
+- ```nano {nombre del archivo}``` para modificar un archivo por terminal con el editor Nano. El mismo comando sirve para crear un archivo si el nombre que indicamos no existe previamente. 
+
+### __Instalación de Visual Studio Code__
+En el terminal tenemos que actualizar dependencias con: 
+ ```
+ sudo apt update
+ ```
+ Luego instalamos la última versión disponible para nuestro sistema escribiendo en el terminal:
+ ```
+ sudo apt install code
+ ```
+ Si lo queremos actualizar a una última versión disponible tendremos que escribir en terminal los siguientes comandos:
+ ```
+ sudo apt update
+ sudo apt upgrade
+ ```
+
+## __Instalación de Flameshot__
+Para instalar el programa con el que poder hacer capturas de pantalla en Ubuntu tendremos que escribir en el terminal:
+```
+sudo apt install flameshot
+```
+
+
+---
+---
+## Trabajo en entorno virtualizado
+
+
+ ### __Instalación de VirtualBox__
+Primero vamos a necesitar instalar las dependencias para que no dé un fallo la instalación: 
+```
+sudo apt install libcurl4 libqt5opengl5 libqt5printsupport5
+```
+Descargamos VirtualBox y el *extension pack* desde la página oficial de descargas https://www.virtualbox.org/wiki/Linux_Downloads y ejecutamos el archivo .deb descargado:
+```
+sudo dpkg -i {archivo .deb}
+```
