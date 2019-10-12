@@ -102,11 +102,11 @@ Una vez generada la clave, la mostramos:
 ```
 cat ~/.ssh/id_rsa.pub
 ```
-![clave ssh a copiar](/images/clave-ssh.png)
+![clave ssh a copiar](images/clave-ssh.png)
 
 Luego la copiamos en *Edit user*  >> *Settings*  >> *SSH and PGP keys* de la página GitHub:
-![imagen Edit user y settings](/images/settings-github.png)
-![imagen ssh and pgp keys](/images/ssh-key.png)
+![imagen Edit user y settings](images/settings-github.png)
+![imagen ssh and pgp keys](images/ssh-key.png)
 
 Instalamos ahora Openssh-server escribiendo en el terminal:
 ```
@@ -208,7 +208,7 @@ ssh-add ~/.ssh/id_rsa
     >```
     >sudo apt install meld
     >```
-    >![imagen mergetool](/images/mergetool.png)
+    >![imagen mergetool](images/mergetool.png)
     >
     >Cuando un archivo nos da conflicto nos aparece algo como:   
     > *<<<* HEAD  
