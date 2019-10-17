@@ -258,6 +258,7 @@ ssh cristian@servidor -p 2222
 servidor:3333
 ```
 
+-----
 
 ## En el caso de establecer la conexión por el puente
 
@@ -305,10 +306,266 @@ sudo apt install filezilla
 -----
 ## Instalar ZIP
 ```
-sudo yum install zip
 sudo yum install unzip
 ```
 -----
+
+## Colocar la IP generada por el puerto como estática para que siempre sea la misma
+```
+sudo nano /etc/sysconfig/network-scripts/ifcfg-enp0s3
+```
+- Cambiar BOOTPROTO de DHPC A static
+- Crear una linea con IPADDR=(ip generada por el puerto)
+- Crear una linea con NETMASK=(con la mascara generada por el puerto)(255.255.255.0)
+- Crear una linea con GATEWAY=192.168.1.1
+- Crear una linea con DNS1=8.8.8.8
+- Crear una linea con DNS2=8.8.4.4
+- Reiniciar el servidor para volver a ver la IP que genera y debería ser la misma siempre
+
+----
+
+# Simular 2 webs distintas soportadas por el mismo servidor
+
+- Salir de ssh
+- Entrar en Descargas
+- Y descargar el archivo del aula virtual en el directorio
+- Una vez lo tengamos en Descargas ejecutar la siguiente intrucción para copiar por ssh el archivo establecemos la ruta del servidor (ojo, lo normal es no tener la carpeta creada de Descargas): 
+```
+scp ./web_daw.zip cristian@servidor:/home/cristian/Descargas/web_daw.zip
+```
+- Cambiar el tiempo de espera de conexión de FIlezilla desde Edición opciones a uno superior
+- Conectar el Filezilla al servidor
+- Descomprimir el archivo con unzip
+
+- A continuación creamos 2 carpetas en el servidor para cada web en la carpeta dedicada a webs
+```
+ssh cristian@(ip generada)
+sudo mkdir /var/www/clientes
+sudo mkdir /var/www/proveedores
+```
+
+- Ahora copiamos el contenido la web que hemos pasado y descomprimido previamente a cada una de las dos carpetas
+```
+cd Descargas
+sudo cp -R web_daw/* /var/www/clientes/
+sudo cp -R web_daw/* /var/www/proveedores/
+```
+
+- Cambiamos el titulo de cada web para diferenciarlas:
+```
+sudo nano /var/www/clientes/index.html
+sudo nano /var/www/proveedores/index.html
+```
+
+- Los permisos deben ser estos:
+```
+644 (rw-r--r--) archivos
+755 (rwxr-xr-x) carpetas
+```
+
+-Mirar permisos:
+```
+ll /var/www/
+ll /var/www/clientes/
+ll /var/www/proveedores/
+```
+
+## Crear los VirtualHost de cada web en los archivos de configuración de apache
+ - Ver la configuración de apache
+ ```
+ ll /etc/httpd/conf.d
+ ```
+
+ - Comprobamos que no hay nada en conf y procedemos a añadir los archivos ahi:
+ ```
+ sudo nano /etc/httpd/conf.d/clientes.conf
+ ```
+
+ - Al crear el archivo añadirmos esto en el:
+ ```
+ <VirtualHost *:80> (que vaya por el puerto 80)
+    DocumentRoot /var/www/clientes (declaramos carpeta origen)
+    ServerName clientes.com (declaramos nuestro dominio)
+</VirtualHost>
+ ```
+
+ - Y repetimos el mismo paso para proveedores
+
+ ## Asignar IPS para las web
+ - Desde local vamos a editar el archivo hosts
+
+ - Añadimos las IPS (previamente compradas) para clientes y proveedores, pero como solo tenemos la del servidor pues ponemos esa para los 2
+ ```
+192.168.1.181 clientes.com
+192.168.1.181 proveedores.com
+ ```
+
+ - Y reiniciamos apache
+
+ - Ahora ya podemos acceder a cada web por sus accesos en el navegador
+ ```
+ clientes.com
+ proveedores.com
+ ```
+------
+## Generar 1 IP para cada web ( En caso de disponer de 2 IPS )
+- Cerramos la maquina virtual
+- Añadirmos otro adaptador puente en el virtualBox desde la configuracion web
+- Volvemos a iniciar la máquina virtual
+
+- Vemos que IPS nos ha generado
+```
+ip addr show
+```
+
+- Cambiamos el archivo VirtualHost para poner un ip distinta a cada una
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+sudo nano /etc/httpd/conf.d/proveedores.conf
+```
+
+```
+<VirtualHost 192.168.1.181:80>
+    DocumentRoot /var/www/clientes
+    ServerName clientes.com
+</VirtualHost>
+
+
+<VirtualHost 192.168.1.193:80>
+    DocumentRoot /var/www/proveedores
+    ServerName proveedores.com
+</VirtualHost>
+```
+
+- Despues comprobar los fallos y luego reiniciar con:
+```
+sudo apachectl configtest
+sudo apachectl restart
+```
+
+- Ahora estan asignadas la ips en cada página y debemos cambiar el archivo hosts de local ya que lo teniamos configurado para que apuntaran a la misma
+
+```
+exit
+sudo nano /etc/hosts
+```
+
+- Y ponemos que una de ellas apunte a la ultima IP generada
+
+-----
+
+## Crear una pagina nueva con un puerto distinto por si tenemos solo una IP
+
+- Creamos la carpeta, copiamos todo el contenido de clientes a esa nueva carpeta y editamos el html para diferenciarla
+
+```
+mkdir /var/www/trabajadores
+sudo cp -R /var/www/clientes/* /var/www/trabajadores
+sudo nano /var/www/trabajadores/index.html
+```
+
+- Creamos un archivo nuevo de configuracion:
+```
+sudo nano /etc/httpd/conf.d/trabajadores.conf
+```
+
+- Declaramos que escuche por otro puerto distinto que el de los otros
+```
+Listen 8080
+<VirtualHost *:8080>
+    DocumentRoot /var/www/trabajadores
+    ServerName trabajadores.com
+</VirtualHost>
+```
+
+- Reiniciamos el servidor
+```
+sudo apahcectl restart
+```
+
+- Abrimos ese puerto en el Firewall
+```
+sudo firewall-cmd --add-port=8080/tcp --permanent
+```
+
+- Y recargamos el Firewall
+
+```
+sudo firewall-cmd --reload
+```
+
+- Ahora podemos acceder a esa pagina especificando el puerto:
+```
+192.168.1.181:8080
+```
+- Si añadimos esta nueva IP con puerto a hosts podremos generar un acceso.
+---
+# Instalación de PHP y sus configuraciones
+- Comporbar que modulos tenemos instalados:
+
+```
+httpd -M
+```
+
+- Primero cambiar este archivo a como lo teniamos anteriormente:
+```
+sudo nano /etc/sysconfig/network-scripts/ifcfg-enp0s3
+```
+
+- Cambiar el Gateway a:
+```
+GATEWAY=192.168.1.2
+```
+
+- Reiniciar la red (Si ha generado una red distinta, habra que cambiarla de todos los sitios): 
+```
+sudo service network restart
+```
+
+- Instalar este repositorio:
+
+```
+sudo yum install epel-release yum-utils
+```
+
+- Instalamos el repositorio para PHP:
+```
+sudo yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+```
+
+- Activamos el repositorio:
+```
+sudo yum-config-manager --enable remi-php72
+```
+
+- Instalamos PHP y otras de sus librerias:
+```
+sudo yum install php php-common php-opcache php-mcrypt php-cli
+```
+
+- Instalar otras librerias:
+```
+sudo yum install php-gd php-curl php-mysqlnd
+```
+
+- Ver la versión de PHP:
+```
+php -v
+```
+
+- Con esto se ha añadido un archivo de configuracion de php en las configuraciones del httpd.
+
+- Devolvemos el archivo "ifcfg-enp0s3" a como lo teniamos antes de instalar PHP.
+
+
+
+
+
+
+
+
+
+
 
 
 
