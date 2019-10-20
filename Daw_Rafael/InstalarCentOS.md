@@ -9,15 +9,16 @@ Documentación
 
 ## Instalación de apache
 
-- Activamos la red
+- Al inicio poner nombre de usuario y contraseña
 
+- En centOS:
 ```
-sudo vi /etc/sysconfig/network-scripts/ifcfg-enp0s3
+sudo vi /etc/sysconfig/network-scripts/ifcfg-enp<TAB>
 ```
 
-- Cambiar al modo edición del resultado de la instrucción anterior. Para entrar al modo edición pulsamos la tecla "i".
+- Cambiar al modo edición del resultado de la instrucción anterior para activar la edición de configuración con la "i".
 
-- Cambiamos la instrucción ONBOOT de "no" a "yes".
+- Cambiamos la última instrucción de "no" a "yes".
 
 - Salimos del modo edición con "escape".
 
@@ -48,12 +49,12 @@ systemctl status httpd
 ```
 sudo systemctl start httpd
 ```
-
-- Apagar la maquina virtual
+- Apagar la mv:
 ```
 sudo shutdown
 ```
 
+-----
 
 # Conexión por SSH a la máquina virtual
 
@@ -64,11 +65,11 @@ sudo shutdown
 ip addr show
 ```
 
-- Para comprobar la ip en nuestro propio ordenador utilizamos la misma instrucción que antes.
-
-## Cuando las IPS son distintas de la maquina virtual y local.
+- Para comprobar la ip en nuestro propio ordenador utilizamos la misma instrucción que antes. Podemos comprobar que son distintas. 
 
 - Para utilizar la conexión SSH de uno a otro necesitamos estar en la misma IP.
+
+## Cunado las IPS son distintas de la maquina virtual y local
 
 - En configuración de red, vamos al apartado de avanzados y podemos hacer un reenvio de puertos.
 
@@ -83,7 +84,7 @@ Puerto invitado: 22 (este es el servicio de SSH) (80 es para el sevicio HTTP)
 
 - Ejecutamos en la consola del ordenador la conexión a la maquina virtual mediante el puente.
 ```
-ssh cristian@127.0.0.1 -p  2222
+ssh rafael@127.0.0.1 -p  2222
 ```
 - Instalamos el servidor de SSH:
 ```
@@ -106,51 +107,100 @@ sudo firewall-cmd --zone=public --add-service=ssh --permanent
 sudo firewall-cmd --reload
 ```
 
-## Cuando coinciden las IPS de la maquina virtual y local
+## Cuando coincides las IPS de la maquina virtual y local
 
-- En configuración de red de la maquina virtual, cambiamos el modo de conexión de NAT a Adaptador Puente.
+- Vamops a configuración/red y cambiamos NAT por Adaptador puente
 
-- Volvemos a inicar la maquina virtual.
+- Volvemos a iniciar la maquina virtual
 
-- Miramos que ip nos ha asignado el Adaptador puente.
-
+- Comprobar dirección IP:
 ```
 ip addr show
 ```
 
-- Cada vez que iniciemos la maquina virtual cambiara la ip, apuntamos la que nos ha asignado : 192.168.1.181/24 (en este caso).
+- Apuntar IP ya que se va cambiando cada vez que la iniciemos
 
-- Ahora vamos al terminal de nuestro local para conectarnos por SSH.
-
+- A traves de la terminal de nuestro ordenador ponemos:
 ```
-ssh cristian@192.168.1.181 (ip generada por el Puerto de Envios)
+ssh rafael@IPapuntada
+```
+- Ya estaremos conectados al servidor
+
+- Iniciamos apache:
+```
+sudo systemctl start httpd
 ```
 
-- Ahora estamos conectado desde local al servidor de la maquina virtual
-
-- Abrir el Firewall para conexiones http:
+- Abilitar el puerto para que si ponemos la Ip en el navegador aparezca:
 ```
 sudo firewall-cmd --zone=public --add-service=http --permanent
 ```
-
-- Reiniciamos el Firewall:
+- Ahora hay que reiniciar el firewall:
 ```
 sudo firewall-cmd --reload
 ```
-----
 
-## Instrucciones linux
+## Codigo Importante para Apache:
+```
+cat /etc/*-release //version sistema Linux
 
-- Saber la version de linux:
-```
-cat  /etc/*-release
+sudo apachectl stop //Para el servidor
+
+sudo apachectl start //Iniciar el servidor
+
+apachectl status //Estado de apache
+
+sudo apachectl restart //reinicia apache pero las conexiones se van
+
+sudo apachectl graceful //Espera que todas la conexiones actuales para reiniciar
 ```
 
-- Reiniciar centos: 
+- Cuando reinicemos centOS apache estará activado: 
 ```
-shutdown -rf now
+sudo systemctl enable httpd
 ```
----
+
+- Intalar manual:
+```
+sudo yum install httpd-manual
+sudo apachectl restart
+```
+
+- Version apache:
+```
+httpd -v
+```
+
+- Crear y administrar servidores:
+```
+sudo nano /etc/hosts
+```
+
+- Instalar nano:
+```
+sudo yum install nano
+```
+
+- Cambiar nombre del ordenador:
+```
+sudo nano /etc/hostname
+```
+
+- Reiniciar servidor:
+```
+sudo reboot
+```
+
+- Archivos configuracion apache:
+```
+ll /etc/httpd
+```
+
+- Archivo de configuración:
+```
+sudo nano /etc/httpd/conf/httpd.conf
+```
+
 
 ## Manipulación de apache
 - Para ver la verison de apache ejecutamos en la consola local:
@@ -170,7 +220,6 @@ apachectl status
 apachectl stop
 apachectl start
 apachectl restart
-apachectl graceful //lo mismo que restart pero respetando las conexiones actuales
 ```
 
 - Hacer que el sistema arranque el servidor de apache cuando inicie:
@@ -229,12 +278,8 @@ cat /etc/hostname
 ```
 sudo nano /etc/hostname
 ```
----
 
-# Cambiar el nombre del los hosts para un acceso más sencillo
-## En caso del primer ejemplo de que las ips no sean iguales (Conexión NAT)
-
-- Cambiar el archivo de hosts para relacionar IPs con URLS, por ejemplo que 127.0.0.1 se llame servidor y podamos acceder mediante el nombre "servidor" en el navegador, para que funcione hay que reiniciar (En Centos):
+- Cambiar el archivo de hosts para relacionar IPs con URLS, por ejemplo que 127.0.0.1 se llame servidor y podamos acceder mediante el nombre "servidor" en el navegador, para que funcione hay que reiniciar:
 ```
 sudo nano /etc/hosts
 sudo reboot
@@ -246,11 +291,9 @@ sudo nano /etc/hosts
 "y ponemos el mismo nombre de referencia de la dirección 127.0.0.1 (servidor)"
 ```
 
-
-
 - Volvemos a conectarnor al servidor por ssh:
 ```
-ssh cristian@servidor -p 2222
+ssh rafael@servidor -p 2222
 ```
 
 - Ahora podemos acceder al servidor con el navegador mediante:
@@ -258,61 +301,37 @@ ssh cristian@servidor -p 2222
 servidor:3333
 ```
 
+- Mi servidor para entrar:
+```
+ssh miservidor
+```
 
-## En el caso de establecer la conexión por el puente
-
-- Añadir en el archivo hosts la ip proporcionada por el puente con el nombre que nosotros queramos tanto en el servidor como en local.
+# Colocar la IP generada por el puerto como estática para que siempre sea la misma
 
 ```
-sudo nano /etc/hosts
+sudo nano /etc/sysconfig/network-scripts/ifcfg-enp0s3
 ```
-- Salir del servidor en local:
+
+- Poner este codigo desde BOOTPROTO:
+```
+BOOTPROTO=static
+IPADDR=192.168.1.El que tengas
+NETMASK=255.2555.255.0
+GATEWAY=192.168.1.1
+DNS1=8.8.8.8
+DNS2=8.8.4.4
+```
+
+- Reiniciar el servido:
 ```
 sudo reboot
+    o
+sudo shutdown -r now
 ```
 
-- Entrar en el servidor desde local:
+# Poner archivo desde terminal al local
+
 ```
-ssh cristian@(ip generada por el puerto de envios)
+cd Descargas
+scp ./archivo nombre_servidor:/home/rafael/archvo
 ```
-
-- Ya podriamos acceder al servidor desde el navagador local con el nombre del host que hayamos puesto en la direccion generada por el puente de envios.
-```
-servidor/
-```
-
-
--------------------------------------------
-# Tratamiento del contenido del servidor con FileZilla
-
-- Instalar filezilla
-```
-sudo apt install filezilla
-```
-
-- Poner un nuevo sitio en filezilla desde el icono arriba a la izquierda.
-
-- Poner nuestra ip, el puerto 22 y por protocolo SSH.
-
-- Modo de acceso normal, y ponemos nuestro usuario y contraseña
-
-- Despues de guardarlo, accedemos a un nuevo sitio desde la flecha de accion debajo del icono de arriba a la izquierda que hemos pulsado antes.
-
-- Ahora conectados al servidor podemos crear carpetas y demas y observarlas desde el FIleZilla.
-
-- Podemos subir archivos de local al FileZilla y de esa manera meter archivos al servidor.
-
------
-## Instalar ZIP
-```
-sudo yum install zip
-sudo yum install unzip
-```
------
-
-
-
-
-
-
-
