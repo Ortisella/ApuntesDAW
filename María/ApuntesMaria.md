@@ -32,11 +32,18 @@
     - [Poner la IP estática](#poner-la-ip-estática)
     - [Subir archivos a servidor CentOS](#subir-archivos-a-servidor-centos)
     - [Módulo de Apache para gestionar PHP](#módulo-de-apache-para-gestionar-php)
-    - [Simular que tenemos varios dominios en el mismo servidor](#simular-que-tenemos-varios-dominios-en-el-mismo-servidor)
-    - [Simular que tenemos varios dominios en la misma IP](#simular-que-tenemos-varios-dominios-en-la-misma-ip)
-    - [Simular que tenemos varios dominios en varias IP](#simular-que-tenemos-varios-dominios-en-varias-ip)
-    - [Simular que tenemos varios dominios en puertos distintos](#simular-que-tenemos-varios-dominios-en-puertos-distintos)
-
+    - Dominios:
+        - [Simular que tenemos varios dominios en el mismo servidor](#simular-que-tenemos-varios-dominios-en-el-mismo-servidor)
+        - [Simular que tenemos varios dominios en la misma IP](#simular-que-tenemos-varios-dominios-en-la-misma-ip)
+        - [Simular que tenemos varios dominios en varias IP](#simular-que-tenemos-varios-dominios-en-varias-ip)
+        - [Simular que tenemos varios dominios en puertos distintos](#simular-que-tenemos-varios-dominios-en-puertos-distintos)
+    - [Instalación SQL](#instalación-sql)
+    - Seguridad
+        - [Autentificación en servidor Apache](#autentificación-en-servidor-apache)
+        - [Autentificación con Digest](#autentificación-con-digest)
+        - [Control de acceso](#control-de-acceso)
+        - [Control de acceso a nivel de carpeta](#control-de-acceso-a-nivel-de-carpeta)
+        - [Configuración de SSL](#configuración-de-ssl)
     
 ---
 ---
@@ -115,11 +122,11 @@ Una vez generada la clave, la mostramos:
 ```
 cat ~/.ssh/id_rsa.pub
 ```
-![clave ssh a copiar](/images/clave-ssh.png)
+![clave ssh a copiar](images/clave-ssh.png)
 
 Luego la copiamos en *Edit user*  >> *Settings*  >> *SSH and PGP keys* de la página GitHub:
-![imagen Edit user y settings](/images/settings-github.png)
-![imagen ssh and pgp keys](/images/ssh-key.png)
+![imagen Edit user y settings](/mages/settings-github.png)
+![imagen ssh and pgp keys](images/ssh-key.png)
 
 Instalamos ahora Openssh-server escribiendo en el terminal:
 ```
@@ -221,7 +228,7 @@ ssh-add ~/.ssh/id_rsa
     >```
     >sudo apt install meld
     >```
-    >![imagen mergetool](/images/mergetool.png)
+    >![imagen mergetool](images/mergetool.png)
     >
     >Cuando un archivo nos da conflicto nos aparece algo como:   
     > *<<<* HEAD  
@@ -485,6 +492,16 @@ En la configuración de los módulos ahora vemosque hay un archivo php porque ya
 ```
 ll /etc/httpd/conf.modules.d
 ```
+Para añadir una página PHP al servidor, creamos el archivo y entramos en modo edición para redactarlo:
+```
+sudo nano /var/www/index.php
+```
+Si da problemas como en clase, tendremos que poner la página dentro de alguna carpeta que tengamos en el servidor como /var/www/clientes/index.php.  
+Reiniciamos el servidor
+```
+sudo apachectl restart
+```
+Podremos ver la página en el navegador escribiendo en la barra de direcciones {IP del servidor}/index.php
 
 ### __Simular que tenemos varios dominios en el mismo servidor__
 En Filezilla, conectamos con el servidor y copiamos la web comprimida de local al servidor mediante el terminal y la carpeta donde está la web en local:
@@ -573,6 +590,326 @@ Relanzamos el firewall:
 ```
 sudo firewall-cmd --reload
 ```
+
+### __Instalación SQL__
+
+Primero debemos instalar todas las dependencias para los paquetes de SQL Server:
+```
+sudo yum install mariadb mariadb-server
+```
+Podemos ver cuál es el estado de nuestras bases de datos en el servidor con:
+```
+sudo systemctl status mariadb
+```
+![foto estado bbdd](images/)
+
+Ahora ponemos la bbdd en marcha:
+```
+sudo systemctl start mariadb
+```
+y habilitamos el servicio:
+```
+sudo systemctl enable mariadb
+```
+Configuramos la seguridad de la base de datos (pulsamos a todo que sí y la contraseña la dejamos vacía con intro o escribimos la nuestra si le habíamos puesto una). Decimos que sí para borrar todo lo que se crea predefinido. 
+```
+sudo mysql_secure_installation
+```
+Para probar si funciona, entramos en el gestor de bbdd y para salir escribimos "quit".
+```
+mysql -u root -p
+```
+Podemos ver las bases de datos que tenemos con:
+```
+show DATABASES
+```
+Pero para crear una bbdd escribimos:
+```
+create DATABASE {nombre de la bbdd};
+```
+Ahora necesitamos instalar PhpMyAdmin y sus dependencias:
+```
+sudo yum install php-pecl-zip php-mbstring
+
+sudo yum install phpmyadmin
+```
+Tenemos que editar el archivo de configuración para añadir las conexiones de seguridad.
+```
+sudo nano /etc/httpd/conf.d/phpMyAdmin.conf
+```
+Comentamos todo lo que hay en < RequireAny >, etiquetas incluídas, escribiendo # al comienzo de cada línea, y añadimos inmediatamente después __Require all granted__
+![foto](images/)
+
+Necesitamos reiniciar el servidor:
+```
+sudo apachectl restart
+```
+Podemos ver el resultado en el navegador, escribiendo en la barra de direcciones {Ip del servidor}/phpmyadmin/
+
+### __Autentificación en servidor Apache__
+
+Crearemos una página a la que sólo pueda acceder el Administrador. Para ello, primero creamos la página:
+```
+sudo mkdir /var/www/clientes/admin
+
+sudo nano /var/www/clientes/admin/index.html
+```
+Dentro podemos escribir algo como _Página restringida a admins_  
+Podremos ver la página en el navegador escribiendo en la barra de direcciones {IP del servidor}/admin  
+
+Ahora necesitamos crear una carpeta para guardar las contraseñas: 
+```
+sudo mkdir /etc/httpd/password
+```
+y dentro creamos un archivo para las contraseñas añadiendo al usuario:
+```
+sudo htpasswd -c /etc/httpd/password/{archivo de contraseñas, ej: passwords-admin} {usuario, ej: admin}
+```
+Pedirá la contraseña para ese usuario y ponemos admin para que sea más fácil de recordar. 
+
+Podemos ver los usuarios y sus contraseñas encriptadas en: 
+```
+cat /etc/httpd/{carpeta, ej: password}/{archivo, ej: passwords-admin}
+```
+
+Ahora debemos restringir el acceso a la página de administradores: 
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+```
+Añadimos al final del archivo: 
+```
+<Directory "/var/www/clientes/admin"> {es el directorio al que quiero poner las restricciones}
+    AuthBasic
+    AuthName "Administrador"
+    AuthUserFile /etc/httpd/password/passwords-admin
+    Require valid-user {si solo quisieramos que entrara el usuario admin, pondríamos Require user admin}
+</Directory>
+```
+![foto](foto)  
+
+Comprobamos que no hay ningún error en la configuración con:
+```
+sudo apachectl configtest
+```
+y reiniciamos el servidor:
+```
+sudo apachectl restart
+```
+Si en la barra de direcciones del navegador escribimos {IP del servidor}/admin/ nos pedirá el usuario y la contraseña para poder acceder. 
+
+### __Autentificación con Digest__
+
+La autentificación básica envía la información en texto plano, mientras que la Digest la manda encriptada. Sin embargo, la básica se guarda encriptada en el servidor y la Digest no. 
+
+Creamos un archivo al que más adelante restringiremos el acceso: 
+```
+sudo mkdir /var/www/proveedores/admin
+
+sudo nano /var/www/proveedores/admin/index.html
+```
+Ahora creo un usuario con contraseña (para añadir simplemente usuarios sin crearlos es quitando -c):
+```
+sudo htdigest -c /etc/httpd/password/digest "{nombre del grupo, ej: administradores}" {nombre del usuario, ej: admin}
+```
+Para ver el archivo con los usuarios y las contraseñas: 
+```
+cat /etc/httpd/password/digest
+```
+El acceso se configura de forma muy similar a la forma básica. 
+```
+sudo nano /etc/httpd/conf.d/proveedores.conf
+```
+Añadimos al final del archivo: 
+```
+<Directory "/var/www/proveedores/admin"> {es el directorio al que quiero poner las restricciones}
+    AuthDigest
+    AuthName "Administradores" {Tiene que coincidir con el que hemos puesto en el grupo al crear el usuario}
+    AuthUserFile /etc/httpd/password/passwords-admin
+    Require valid-user {si solo quisieramos que entrara el usuario admin, pondríamos Require user admin}
+</Directory>
+```
+![foto](foto)  
+
+Comprobamos que no hay ningún error en la configuración con:
+```
+sudo apachectl configtest
+```
+Si pasa el configtest pero aún así no nos funciona, podemos mirar los logs y encontrar lo que nos acaba de pasar al final de la ventana: 
+```
+sudo more /var/log/httpd/error_log
+```
+Reiniciamos el servidor:
+```
+sudo apachectl restart
+```
+Si en la barra de direcciones del navegador escribimos {IP del servidor}/admin/ nos pedirá el usuario y la contraseña para poder acceder. 
+
+### __Control de acceso__
+
+Podemos restringir el acceso a una página mediante una IP. Para ello, primero deberemos crear la página:
+```
+sudo mkdir /var/www/clientes/gestion
+
+sudo nano /var/www/clientes/gestion/index.html
+
+y escribimos dentro Web restringida al departamento de gestión
+```
+Modificamos el archivo de configuración donde está alojada la página:
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+```
+Añadimos en ese archivo un nuevo Directory:
+```
+<Directory "/var/www/clientes/gestion">
+    <RequireAll>
+        Require all denied {se deniega el acceso a todo el mundo}
+        Require ip {nuestra ip} {para que solo pueda acceder la ip indicada}
+        Require not ip {ip que queremos excluir}
+    </RequireAll>
+</Directory>
+```
+> Para poner todas las IP del centro de estudios:  
+> Require ip 192.168.1.0/255.255.255.0   
+> ó 192.168.1.0/24  
+> ó 192.168.1
+
+Tenemos que comprobar que el archivo de configuración no tiene ningún error: 
+```
+sudo apachectl configtest
+```
+Y reiniciamos el servidor:
+```
+sudo apachectl restart
+```
+
+### __Control de acceso a nivel de carpeta__
+
+Con __.htaccess__. Permite configurar el acceso en tiempo real sin tener que reiniciar el servidor. El proceso busca el archivo cada vez, lo cual cuesta tiempo y rendimiento. 
+
+Creamos una carpeta para restringir su acceso más adelante:
+```
+sudo mkdir /var/www/clientes/testhtaccess
+```
+Y un archivo con el mensaje "Probando restricción de acceso mediantes .htaccess":
+```
+sudo nano /var/www/clientes/testhtaccess/datos.txt
+
+Tiene que ser datos.txt porque con un archivo index.html no funciona
+```
+Modificamos el archivo de configuración donde está alojada la página:
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+```
+Añadimos en ese archivo un nuevo Directory:
+```
+<Directory "/var/www/clientes/testhaccess">
+    AllowOverride all
+    Options Indexes
+</Directory>
+```
+![foto](foto)  
+
+Tenemos que comprobar que el archivo de configuración no tiene ningún error: 
+```
+sudo apachectl configtest
+```
+Y reiniciamos el servidor:
+```
+sudo apachectl restart
+```
+Para poner quién va a poder ver lo que haya en la carpeta y quién no entramos en
+```
+sudo nano /var/www/clientes/testhaccess/.htaccess
+```
+y escribimos dentro:
+```
+<Directory "/var/www/clientes/gestion">
+    <RequireAll>
+        Require all denied {se deniega el acceso a todo el mundo}
+        Require ip {nuestra ip} {para que solo pueda acceder la ip indicada}
+        Require not ip {ip que queremos excluir}
+    </RequireAll>
+</Directory>
+```
+![foto](foto)
+
+### __Configuración de SSL__
+
+Para hacer la conexión segura (que el servidor al que nos conectamos sea el que dice ser) y que el tráfico esté encriptado. 
+
+Usaremos una entidad certificadora que nos de un certificado autofirmado. Para ello, instalamos el servidor de SSL:
+```
+sudo yum install openssl
+```
+Creamos una clave privada:
+```
+openssl genrsa -out {nombre del certificado, ej: certificado.key} {fuerza, ej: 2048}
+```
+Creamos el csr, la clave privada:
+```
+openssl req -new -key certificado.key -out certificado.csr
+
+Para el código de país escribimos ES y vamos rellenando los datos
+```
+Generamos un crt:
+```
+openssl x509 -req {caducidad, ej: -days 90} -in certificado.csr -signkey
+
+openssl x509 -req {caducidad, ej: -days 90} -in certificado.crt -signkey
+
+openssl x509 -req {caducidad, ej: -days 90} -in certificado.key -out -signkey
+```
+Con ```ll``` podemos ver todos los certificados que ya tenemos. 
+
+Necesitamos agregar el certificado al servidor para que haga la comprobación con cada conexión. Para ello, instalamos el módulo de Apache que gestiona las conexiones seguras:
+```
+sudo yum install mod_ssl
+
+Indicamos que sí a todo. 
+Se instala en ll /etc/httpd/conf.d
+```
+Copiamos los certificados:
+```
+sudo cp certificado.crt /etc/pki/tls/certs
+
+sudo cp certificado.key /etc/pki/tls/private
+```
+Configuramos el archivo SSL para que seapa dónde están los certificados: 
+```
+sudo nano /etc/httpd/conf.d/ssl.conf
+```
+
+Las líneas que comiencen por __sslcertificatefile__ las cambiamos para que donde pone _localhost_ ponga el nombre de nuestro certificado. Guardamos y reiniciamos Apache:
+```
+sudo apachectl restart
+```
+Cuando vamos a comprobar el acceso mediante el navegador escribiendo en la barra de direcciones ```https://clientes.com``` no nos deja verlo por el puerto, por lo que tendremos que abrir el 443:
+```
+sudo firewall-cmd --zone=public --add-service=https --permanent
+
+sudo firewall-cmd --reload
+```
+Ahora debería salirnos en el navegador una ventana de advertencia. Aceptamos el riesgo y continuamos. Esto ocurre porque el certificado es autofirmado. 
+
+Para que se nos lleve directamente a una conexión segura tenemos que modificar VirtualHost:
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+```
+Dentro de < VirtualHost > añadimos:
+```
+Redirect / https://clientes.com
+```
+![foto](foto)
+
+Guardamos y reiniciamos el servidor:
+```
+sudo apachectl restart
+```
+
+
+
+
+
 
 
 
