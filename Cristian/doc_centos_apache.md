@@ -1,3 +1,40 @@
+- [INSTALACIÓN DE APACHE EN CENTOS](#Instalación-de-Apache-en-Centos)
+    - [Instalación de Apache](#Instalación-de-apache)
+    - [Comandos de gestión de Apache](#Comandos-de-gestión-de-apache)
+
+- [CONEXIÓN POR SSH A LA MÁQUINA VIRTUAL](#Instalación-de-Apache-en-Centos)
+    - [Cuando las IPS son distintas de la maquina virtual y local](#Cuando-las-IPS-son-distintas-de-la-maquina-virtual-y-local)
+    - [Cuando coinciden las IPS de la maquina virtual y local](#Cuando-coinciden-las-IPS-de-la-maquina-virtual-y-local)
+    - [Manipulación de Apache](#Manipulación-de-apache)
+    - [Colocar la IP generada por el puerto como estática para que siempre sea la misma](#Colocar-la-IP-generada-por-el-puerto-como-estática-para-que-siempre-sea-la-misma)
+
+- [AÑADIR UN NOMBRE A LA IP DEL SERVIDOR EN LOS HOSTS](#Añadir-un-nombre-a-la-IP-del-servidor-en-los-hosts)
+    - [Cambiar el nombre del hostname](#Cambiar-el-nombre-del-hostname)
+    - [En caso de que las IPs no sean iguales (Conexión NAT)](#En-caso-de-que-las-IPs-no-sean-iguales-(Conexión-NAT))
+    - [En caso de que las IPs sean iguales](#En-caso-de-que-las-IPs-sean-iguales)
+    
+- [TRATAMIENTO DEL CONTENIDO DEL SERVIDOR CON FILEZILLA](#Tratamiento-del-contenido-del-servidor-con-FileZilla)
+
+- [SIMULAR DISTINTAS WEBS SOPORTADAS POR EL MISMO SERVIDOR](#Simular-distintas-webs-soportadas-por-el-mismo-servidor)
+    - [Asignar la misma IP para cada web](#Asignar-la-misma-IP-para-cada-web)
+    - [Asignar 1 IP distinta para cada web (En caso de disponer de 2 IPS)](#Asignar-1-IP-distinta-para-cada-web-(En-caso-de-disponer-de-2-IPS))
+    - [Crear una página nueva con un puerto distinto en la misma IP](#Crear-una-página-nueva-con-un-puerto-distinto-en-la-misma-IP)
+
+- [INSTALACIÓN DE PHP Y SUS CONFIGURACIONES](#Instalación-de-PHP-y-sus-configuraciones)
+
+- [AÑADIR UNA PÁGINA DE PHP CON BBDD](#Añadir-una-página-de-PHP-con-BBDD)
+    - [Instrucciones dentro del gestor de BBDD](#Instrucciones-dentro-del-gestor-de-BBDD)
+
+
+- [CONFIGURAR LA SEGURIDAD DE APACHE](#Configurar-la-seguridad-de-apache)
+    - [Autenticación básica](#Autenticación-básica)
+    - [Autenticación Digest](#Autenticación-Digest)
+    - [Control de Acceso](#Control-de-Acceso)
+    - [Control de acceso a nivel de carpeta (.htaccess)](#Control-de-acceso-a-nivel-de-carpeta-(.htaccess))
+    - [Configuración de SSL (Secure Sockets Layer) en apache](#Configuración-de-SSL-(Secure-Sockets-Layer)-en-apache)
+    - [Más cosas de seguridad](#Más-cosas-de-seguridad)
+
+
 # Instalación de Apache en Centos
 Documentación
 
@@ -66,7 +103,7 @@ ip addr show
 
 - Para comprobar la ip en nuestro propio ordenador utilizamos la misma instrucción que antes.
 
-## Cuando las IPS son distintas de la maquina virtual y local.
+## Cuando las IPS son distintas de la maquina virtual y local
 
 - Para utilizar la conexión SSH de uno a otro necesitamos estar en la misma IP.
 
@@ -201,6 +238,18 @@ ll
 - En logs las respuestas del servidor.
 - En modules para acceder a los modulos.
 
+## Colocar la IP generada por el puerto como estática para que siempre sea la misma
+```
+sudo nano /etc/sysconfig/network-scripts/ifcfg-enp0s3
+```
+- Cambiar BOOTPROTO de DHPC A static
+- Crear una linea con IPADDR=(ip generada por el puerto)
+- Crear una linea con NETMASK=(con la mascara generada por el puerto)(255.255.255.0)
+- Crear una linea con GATEWAY=192.168.1.1
+- Crear una linea con DNS1=8.8.8.8
+- Crear una linea con DNS2=8.8.4.4
+- Reiniciar el servidor para volver a ver la IP que genera y debería ser la misma siempre
+
 -----------------------
 
 Para revisar que los archivos de configuración estén bien:
@@ -219,7 +268,11 @@ sudo yum install nano
 sudo nano /etc/httpd/conf/httpd.conf
 ```
 -----
-### Cambiar el nombre del host
+
+
+# Añadir un nombre a la IP del servidor en los hosts
+
+## Cambiar el nombre del hostname
 
 - Revisar el nombre del servidor:
 ```
@@ -230,9 +283,7 @@ cat /etc/hostname
 sudo nano /etc/hostname
 ```
 ---
-
-# Cambiar el nombre del los hosts para un acceso más sencillo
-## En caso del primer ejemplo de que las ips no sean iguales (Conexión NAT)
+## En caso de que las IPs no sean iguales (Conexión NAT)
 
 - Cambiar el archivo de hosts para relacionar IPs con URLS, por ejemplo que 127.0.0.1 se llame servidor y podamos acceder mediante el nombre "servidor" en el navegador, para que funcione hay que reiniciar (En Centos):
 ```
@@ -260,28 +311,35 @@ servidor:3333
 
 -----
 
-## En el caso de establecer la conexión por el puente
+## En caso de que las IPs sean iguales
 
 - Añadir en el archivo hosts la ip proporcionada por el puente con el nombre que nosotros queramos tanto en el servidor como en local.
 
 ```
 sudo nano /etc/hosts
+
+(ip generada) servidor
 ```
-- Salir del servidor en local:
+- Salir del servidor:
 ```
-sudo reboot
+exit
+```
+
+```
+sudo nano /etc/hosts
+
+(ip generada) servidor
 ```
 
 - Entrar en el servidor desde local:
 ```
-ssh cristian@(ip generada por el puerto de envios)
+ssh cristian@ (nombre especificado en el hostname o la ip generada por el puente)
 ```
 
 - Ya podriamos acceder al servidor desde el navagador local con el nombre del host que hayamos puesto en la direccion generada por el puente de envios.
 ```
 servidor/
 ```
-
 
 -------------------------------------------
 # Tratamiento del contenido del servidor con FileZilla
@@ -308,23 +366,10 @@ sudo apt install filezilla
 ```
 sudo yum install unzip
 ```
------
-
-## Colocar la IP generada por el puerto como estática para que siempre sea la misma
-```
-sudo nano /etc/sysconfig/network-scripts/ifcfg-enp0s3
-```
-- Cambiar BOOTPROTO de DHPC A static
-- Crear una linea con IPADDR=(ip generada por el puerto)
-- Crear una linea con NETMASK=(con la mascara generada por el puerto)(255.255.255.0)
-- Crear una linea con GATEWAY=192.168.1.1
-- Crear una linea con DNS1=8.8.8.8
-- Crear una linea con DNS2=8.8.4.4
-- Reiniciar el servidor para volver a ver la IP que genera y debería ser la misma siempre
 
 ----
 
-# Simular 2 webs distintas soportadas por el mismo servidor
+# Simular distintas webs soportadas por el mismo servidor
 
 - Salir de ssh
 - Entrar en Descargas
@@ -369,8 +414,10 @@ ll /var/www/
 ll /var/www/clientes/
 ll /var/www/proveedores/
 ```
+---
 
-## Crear los VirtualHost de cada web en los archivos de configuración de apache
+## Asignar la misma IP para cada web
+
  - Ver la configuración de apache
  ```
  ll /etc/httpd/conf.d
@@ -391,7 +438,6 @@ ll /var/www/proveedores/
 
  - Y repetimos el mismo paso para proveedores
 
- ## Asignar IPS para las web
  - Desde local vamos a editar el archivo hosts
 
  - Añadimos las IPS (previamente compradas) para clientes y proveedores, pero como solo tenemos la del servidor pues ponemos esa para los 2
@@ -408,7 +454,7 @@ ll /var/www/proveedores/
  proveedores.com
  ```
 ------
-## Generar 1 IP para cada web ( En caso de disponer de 2 IPS )
+## Asignar 1 IP distinta para cada web (En caso de disponer de 2 IPS)
 - Cerramos la maquina virtual
 - Añadirmos otro adaptador puente en el virtualBox desde la configuracion web
 - Volvemos a iniciar la máquina virtual
@@ -454,7 +500,7 @@ sudo nano /etc/hosts
 
 -----
 
-## Crear una pagina nueva con un puerto distinto por si tenemos solo una IP
+## Crear una página nueva con un puerto distinto en la misma IP
 
 - Creamos la carpeta, copiamos todo el contenido de clientes a esa nueva carpeta y editamos el html para diferenciarla
 
@@ -501,6 +547,7 @@ sudo firewall-cmd --reload
 - Si añadimos esta nueva IP con puerto a hosts podremos generar un acceso.
 ---
 # Instalación de PHP y sus configuraciones
+
 - Comporbar que modulos tenemos instalados:
 
 ```
@@ -555,21 +602,457 @@ php -v
 
 - Con esto se ha añadido un archivo de configuracion de php en las configuraciones del httpd.
 
+---
+- Instalar dependencias de PHPMyAdmin
+
+```
+sudo yum install php-pecl-zip php-mbstring
+```
+
+- Instalamos PHPMyAdmin
+
+```
+sudo yum install phpmyadmin
+```
+
+- Modificar el archivo de configuracion de phpmyadmin
+```
+sudo nano /etc/httpd/conf.d/phpMyAdmin.conf
+```
+
+- Dentro del archivo comentamos con "#" todo el RequireAny,
+y añadimos esta linea:
+```
+Require all granted
+```
+- Reiniciamos el servidor
+```
+sudo apachectl restart
+```
+
+- Ahora podemos acceder mediante el navegador:
+```
+servidor/phpmyadmin
+```
+
+
 - Devolvemos el archivo "ifcfg-enp0s3" a como lo teniamos antes de instalar PHP.
 
+# Añadir una página de PHP con BBDD
+- Creamos un archivo php en:
+```
+sudo nano /var/www/clientes/index.php
+<?php phpinfo(); ?>
+```
+
+- Reiniciamos el servidor
+```
+sudo apachectl restart
+```
+
+- Ahora podemos entrar a ver lo que muestra lo que hayamos definido en el arvicho por el navegador.
+
+```
+servidor/index.php 
+
+(esto es porque clientes es la primera página definida en la IP del servidor)
+
+(o también)
+
+clientes.com/index.php
+```
+
+- Vamos a instalar mysql
+
+```
+sudo yum install mariadb mariadb-server
+```
+
+- Miramos el estado de la base de datos y vemos que esta inactiva
+```
+sudo systemctl status mariadb
+```
+
+- Si ocurre lo de los espejos, volver a colocar el BOOTPROTO  dhcp temporalmente en el archivo enp0s3
+
+- Ponemos en marcha la base de datos
+```
+sudo systemctl start mariadb
+```
+
+- Habilitar la base de datos al inicio del servidor
+```
+sudo systemctl enable mariadb
+```
+
+- Configurar la seguridad de la bbdd
+```
+sudo mysql_secure_installation
+```
+
+- Podemos elegir si poner root password o no. y luego todo a si
 
 
 
+## Instrucciones dentro del gestor de BBDD
+- Entramos al gestor de la base de datos
+```
+mysql -u root -p
+```
+
+- Desde aqui podemos crear tablas, hacer consultas etc.
+
+- Mostrar la base de datos
+```
+show DATABASES;
+```
+
+- Crear la base de datos.
+```
+create DATABASE hola;
+```
+
+- Salir del gestor de la BBDD
+```
+quit
+```
+
+-----
+
+# Configurar la seguridad de apache
+## Autenticación básica
+- Imaginamos que tenemos páginas que solo pueden ver personas autorizadas
+
+- Creamos otra página en la web de clientes en la que solo pueda acceder el administrador 
+
+```
+sudo mkdir /var/www/clientes/admin
+
+sudo nano /var/www/clientes/admin/index.html
+```
+- Y ponemos algo dentro para identificarla
+
+- Creamos una carpeta donde crear los usuarios y sus passwords en un archivo
+```
+sudo mkdir /etc/httpd/password
+
+sudo htpasswd -c /etc/httpd/password/passwords-admin admin
+```
+- Segun la instrucción anterior añadirmos el usuario admin al archivo de contraseñas passwords-admin
+
+- Si añadimos otro usuario al archivo tendremos que quitar el -c de la instrucción anterior ya que el archivo ya estaría creado
+
+```
+sudo htpasswd /etc/httpd/password/passwords-admin admin2
+```
+
+- Ponemos de contraseña "admin"
+
+- Así podemos ver la contraseñas de los usuarios en el archivo de forma encriptada
+```
+cat /etc/httpd/password/passwords-admin
+```
+
+- Restringimos el acceso de la página
+
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+```
+
+- Ponemos:
+```
+<Directory "/var/www/clientes/admin">
+    AuthType Basic
+    AuthName "Administrador"
+    AuthUserFile /etc/httpd/password/passwords-admin
+    Require valid-user 
+</Directory>
+```
+
+- Con el Require decimos que sea validado cualquier usuario registrado en la ruta, si solo queremos que sea un usuario especifico ponemos: Require user admin
+
+- Comprobar que en la configuración no hay un error sintáctico
+```
+sudo apachectl configtest
+```
+
+- Reiniciar apache: 
+```
+sudo apachectl restart
+```
+
+- Ahora si entramos al navegador nos pedira usuario y contraseña
+```
+servidor/admin/
+
+o 
+
+clientes.com/admin
+```
+
+## Autenticación Digest
+- Creamos un archivo que será accedido restringidamente
+```
+sudo mkdir /var/www/proveedores/admin
+
+sudo nano /var/www/proveedores/admin/index.html
+```
+- Escribimos un mensaje dentro
+
+- Creamos el archivo de contraseñas en el que meteremos el usuario admin
+```
+sudo htdigest -c /etc/httpd/password/digest "administradores" admin
+```
+- Ponemos contraseña admin
+
+- Recordemos que el -c solo se pondra la vez en la que se crea el archivo, cuando añadamos otros usuarios no.
+
+- Así podemos ver la contraseñas de los usuarios en el archivo en forma hash
+```
+cat /etc/httpd/password/digest
+```
+
+- Restringimos el acceso
+```
+sudo nano /etc/httpd/conf.d/proveedores.conf
+```
+- Ponemos: 
+```
+<Directory "/var/www/proveedores/admin">
+    AuthType Digest
+    AuthName "administradores" (lo mismo que hemos puesto en el htdigest)
+    AuthUserFile /etc/httpd/password/digest
+    Require valid-user 
+</Directory>
+```
+
+- Comprobar que en la configuración no hay un error sintáctico
+```
+sudo apachectl configtest
+```
+
+- Reiniciar apache: 
+```
+sudo apachectl restart
+```
+
+- Ahora si entramos al navegador nos pedira usuario y contraseña
+```
+proveedores.com/admin/
+```
+
+## Control de Acceso
+- Podemos restringir el acceso por IPs o rangos de IPs
+
+- Vamos a crear otro archivo en clientes
+
+```
+sudo mkdir /var/www/clientes/gestion
+
+sudo nano /var/www/clientes/gestion/index.html
+```
+
+- Ponemos dentro un mensaje acorde
+
+- Modificamos el archivo de configuración
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+```
+
+- Añadimos 
+```
+<Directory "/var/www/clientes/gestion">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</Directory>
+```
+
+- Con el Require all denied, restringimos el acceso a todo el mundo
+
+- Require all granted daria acceso a todo el mundo
 
 
+- Añadimos nuestra IP para tener el acceso permitido
+```
+<Directory "/var/www/clientes/gestion">
+    <RequireAll>
+        Require ip 192.168.1.151 (nuestra ip en local)
+    </RequireAll>
+</Directory>
+```
+- Ahora solo podriamos entrar con nuestra IP
+
+- Con Require noy ip denegariamos el accesoa una IP concreto en el que esten todos permitidos
+
+- Para permitir a un rango de IPs:
+Require ip 192.168.1  o Require ip 192.168.1.0/255.255.255.0 o Require ip 192.168.1.0/24 (todas las que deriven de ahi tendran permiso)
+
+- Y reiniciamos el servidor:
+```
+sudo apachectl restart
+```
 
 
+## Control de acceso a nivel de carpeta (.htaccess)
 
+- Podemos controlar el acceso mediante una carpeta
 
+- Creamos otro archivo en clientes
 
+```
+sudo mkdir /var/www/clientes/testhtaccess
 
+sudo nano /var/www/clientes/testhtaccess/datos.txt
+```
 
+- Modificamos el archivo de configuracion de clientes
 
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+```
 
+- Añadimos:
+```
+<Directory "/var/www/clientes/testhtaccess">
+    AllowOverride All
+    Options Indexes (solo funciona si no hay un index.html)
+</Directory>
+```
 
+- El Options indexes muestra una estructura en forma de indices.
 
+- Reiniciamos el servidor: 
+```
+sudo apachectl restart
+```
+
+- Ahora podemos ver el indice en el navegador
+```
+clientes.com/testhtaccess
+```
+
+- Vamos a restringir el acceso a esta carpeta
+
+- Añadimos un archivo htaccess a esta carpeta
+
+```
+sudo nano /var/www/clientes/testhtaccess/.htaccess
+```
+
+- Añadimos:
+```
+Require all denied
+```
+
+- La documentación de como configurar  el Require lo tenemos en el apartado anterior
+
+- No hace falta recargar el servidor cuando configuramos este archivo ya que siempre va a coger el archivo para los permisos por defecto
+
+## Configuración de SSL (Secure Sockets Layer) en apache
+- Con SSL configurariamos la conexión segura
+
+- Significa que el servidor al que nos estamos conectamos esta espeficicando quien es
+
+- Vamos a habilitar la conexión SSL en nuestro servidor generando un certificado autofirmado
+
+- Instalamos el servidor de SSL
+```
+sudo yum install openssl
+```
+
+### Crear una clave privada
+
+```
+openssl genrsa -out certificado.key 2048
+```
+
+- Tenemos que estar en el directorio del usuario
+
+### Crear un archivo csr
+
+```
+openssl req -new -key certificado.key -out certificado.csr
+```
+
+- Ponemos de contraseña patata
+
+### Crear un archivo crt
+
+```
+openssl x509 -req -days 90 -in certificado.csr -signkey certificado.key -out certificado.crt
+```
+
+### Agregar el certificado al servidor apache
+
+- Instalar modulo apahce que genera conexiones seguras
+```
+sudo yum install mod_ssl
+```
+
+- Copiar los certificados a los directorios conrrespondientes
+```
+sudo cp certificado.crt /etc/pki/tls/certs
+
+sudo cp certificado.key /etc/pki/tls/private
+```
+
+- Configurar el archivo ssl para que detecte los certificados
+```
+sudo nano /etc/httpd/conf.d/ssl.conf
+```
+
+- Cambiamos la linea SSLCertificateFile y SSLCertificateKeyFile a esto:
+```
+SSLCertificateFile /etc/pki/tls/certs/certificado.crt
+
+SSLCertificateKeyFile /etc/pki/tls/private/certificado.key
+```
+
+- Reiniciamos apache
+```
+sudo apachectl restart
+```
+
+- Añadimos el servicio https a ña zone publica del firewall
+
+```
+sudo firewall-cmd --zone=public --add-service=https --permanent
+```
+
+- Reiniciamos el firewall
+```
+sudo firewall-cmd --reload
+```
+
+- Accedemos por https a la página:
+```
+https://clientes.com
+```
+
+- Vamos al apartado de avanzado y aceptamos riesgo y continuamos
+
+- Configurar el archivo de clientes
+
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+```
+
+- En el VirtualHost 80 añadimos:
+```
+Redirect / https://clientes.com
+```
+
+- Reiniciamos apache:
+```
+sudo apachectl restart
+```
+
+- Ahora ponemos en el navegador:
+```
+clientes.com
+```
+
+- Solo con poner lo anterior se genera el https automaticamente 
+
+## Más cosas de seguridad
