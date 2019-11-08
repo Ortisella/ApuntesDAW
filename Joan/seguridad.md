@@ -63,7 +63,7 @@
    <RequireAll>
        # Bloquejar totes: Require all denied
        Require ip <IP>
-       
+
        # Require not ip <IP> restringe una ip para que no pueda ver la pagina
    </RequireAll>
 </Directory>
@@ -83,7 +83,7 @@ Require ip 192.168.1 = Require ip 192.168.1.0/255.255.255.0 = Require ip 192.168
 </Directory>
 ```
 1. Crear un arxiu anomenat .htaccess en la carpeta a configurar
-```htaccess
+```
 #No fa falta posar la etiqueta '<Directory>'
 Require all denied
 ```
@@ -108,10 +108,7 @@ Nota: ** si fa falta instal·lar-lo: ```sudo yum install openssl``` **
 1. moure els arxius .crt i .key anteriorment generats:
     * ```sudo cp certificado.crt /etc/pki/tls/certs```
     * ```sudo cp certificado.key /etc/pki/tls/private```
-1. Modificar /etc/httpd/conf.d/ssl.conf per a indicar on estan el arxius, buscar (^W) **SSLCertificateFile** i **SSLCertificateKeyFile**. 
+1. Modificar /etc/httpd/conf.d/ssl.conf per a indicar on estan el arxius, buscar (^W) **SSLCertificateFile** i **SSLCertificateKeyFile**.
 1. Obrir el port :```sudo firewall-cmd --zone=public --add-service=https --permanent```
     * Recorda que fa falta recargar el firewall: ```sudo firewall-cmd --reload```
 1. Afegir a la configuracio de la pag: 'Redirect / https://clientes.com' per a que redireccione per https
-
-
-  
