@@ -145,3 +145,51 @@ systemctl reload apache2
 sudo a2dissite alumnos
 systemctl reload apache2
 ```
+
+- Archivo a modificar para el SSL en Ubuntu
+```
+/etc/apache2/sites-available/default-ssl.conf
+```
+
+- Modificacion SSL Ubuntu
+```
+SSLCertificateFile /etc/ssl/certs/certificado.crt
+SSLCertificateKeyFile /etc/ssl/private/certificado.key
+```
+
+- VirtualHost para SSL
+```
+<VirtualHost *:80>
+    ServerName alumnos.com
+    DocumentRoot /var/www/alumnos
+    Redirect permanent / https://alumnos.com
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName alumnos.com
+    DocumentRoot /var/www/alumnos
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/certificado.crt
+    SSLCertificateKeyFile /etc/ssl/private/certificado.key
+</VirtualHost>
+```
+
+- Instalar php
+```
+sudo apt install php libapache2-mod-php php-mysql
+```
+
+- Instalar MariaDB / Mysql
+```
+sudo apt install mariadb-server
+```
+
+- Poner contraseña root a mysql
+```
+sudo mysql_secure_installation
+```
+
+- Instalar phpmyadmin
+```
+sudo apt install phpmyadmin
+```
