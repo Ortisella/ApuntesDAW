@@ -112,3 +112,15 @@ Nota: ** si fa falta instal·lar-lo: ```sudo yum install openssl``` **
 1. Obrir el port :```sudo firewall-cmd --zone=public --add-service=https --permanent```
     * Recorda que fa falta recargar el firewall: ```sudo firewall-cmd --reload```
 1. Afegir a la configuracio de la pag: 'Redirect / https://clientes.com' per a que redireccione per https
+
+
+## PER A EL HTTPS
+```
+<VirtualHost *:443>
+   DocumentRoot /var/www/trabajadores
+   ServerName trabajadores.com
+   SSLEngine on
+   SSLCertificateFile /etc/pki/tls/certs/certificado.crt
+   SSLCertificateKeyFile /etc/pki/tls/private/certificado.key
+</VirtualHost>
+```
