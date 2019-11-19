@@ -115,7 +115,7 @@ sudo /etc/hosts
 
 ![imagen host](images/host.png)
 
-# Configurar ip statica con dos ips
+# Configurar ip estatica con dos ips
 
 ### hay que habilitar otro adaptador puente en virtualbox
 
@@ -123,7 +123,7 @@ sudo /etc/hosts
 sudo vi /etc/netplan/50-cloud-init.yaml
 ```
 
-### configuración statica
+### configuración estatica
 
 ```
 network:
@@ -228,7 +228,7 @@ Listen 8082
 </Directory>
 ```
 
-# Idexear el contenido
+# Indexear el contenido
 
 ### En el virtual host
 
