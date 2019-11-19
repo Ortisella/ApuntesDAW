@@ -1,28 +1,27 @@
 - [INSTALACIÓN DE APACHE EN CENTOS](#Instalación-de-Apache-en-Centos)
     - [Instalación de Apache](#Instalación-de-apache)
     - [Comandos de gestión de Apache](#Comandos-de-gestión-de-apache)
-
-- [CONEXIÓN POR SSH A LA MÁQUINA VIRTUAL](#Instalación-de-Apache-en-Centos)
-    - [Cuando las IPS son distintas de la maquina virtual y local](#Cuando-las-IPS-son-distintas-de-la-maquina-virtual-y-local)
-    - [Cuando coinciden las IPS de la maquina virtual y local](#Cuando-coinciden-las-IPS-de-la-maquina-virtual-y-local)
     - [Manipulación de Apache](#Manipulación-de-apache)
-    - [Colocar la IP generada por el puerto como estática para que siempre sea la misma](#Colocar-la-IP-generada-por-el-puerto-como-estática-para-que-siempre-sea-la-misma)
 
-- [AÑADIR UN NOMBRE A LA IP DEL SERVIDOR EN LOS HOSTS](#Añadir-un-nombre-a-la-IP-del-servidor-en-los-hosts)
-    - [Cambiar el nombre del hostname](#Cambiar-el-nombre-del-hostname)
-    - [En caso de que las IPs no sean iguales (Conexión NAT)](#En-caso-de-que-las-IPs-no-sean-iguales-(Conexión-NAT))
-    - [En caso de que las IPs sean iguales](#En-caso-de-que-las-IPs-sean-iguales)
+- [CONEXIÓN POR SSH A LA MÁQUINA VIRTUAL](#Conexión-por-SSH-a-la-máquina-virtual)
+    - [Cuando las IPS son distintas de la maquina virtual y local - ( Regla de reenvíos )](#Cuando-las-IPS-son-distintas-de-la-maquina-virtual-y-local)
+    - [Cuando coinciden las IPS de la maquina virtual y local - ( Adaptador puente )](#Cuando-coinciden-las-IPS-de-la-maquina-virtual-y-local)
+    - [Colocar la IP generada por el puerto como estática para que siempre sea la misma](#Colocar-la-IP-generada-por-el-puerto-como-estática-para-que-siempre-sea-la-misma)
+    - [Configuración del host del servidor](#Añadir-un-nombre-a-la-IP-del-servidor-en-los-hosts)
+        - [Cambiar el nombre del hostname](#Cambiar-el-nombre-del-hostname)
+        - [En caso de que las IPs no sean iguales (Conexión NAT)](#En-caso-de-que-las-IPs-no-sean-iguales-(Conexión-NAT))
+        - [En caso de que las IPs sean iguales](#En-caso-de-que-las-IPs-sean-iguales)
     
 - [TRATAMIENTO DEL CONTENIDO DEL SERVIDOR CON FILEZILLA](#Tratamiento-del-contenido-del-servidor-con-FileZilla)
 
 - [SIMULAR DISTINTAS WEBS SOPORTADAS POR EL MISMO SERVIDOR](#Simular-distintas-webs-soportadas-por-el-mismo-servidor)
+    - [Configurar las carpetas y archivos de las webs](#Configurar-las-carpetas-y-archivos-de-las-webs)
     - [Asignar la misma IP para cada web](#Asignar-la-misma-IP-para-cada-web)
     - [Asignar 1 IP distinta para cada web (En caso de disponer de 2 IPS)](#Asignar-1-IP-distinta-para-cada-web-(En-caso-de-disponer-de-2-IPS))
     - [Crear una página nueva con un puerto distinto en la misma IP](#Crear-una-página-nueva-con-un-puerto-distinto-en-la-misma-IP)
 
 - [INSTALACIÓN DE PHP Y SUS CONFIGURACIONES](#Instalación-de-PHP-y-sus-configuraciones)
-
-- [AÑADIR UNA PÁGINA DE PHP CON BBDD](#Añadir-una-página-de-PHP-con-BBDD)
+    - [Añadir una página de PHP con BBDD](#Añadir-una-página-de-PHP-con-BBDD)
     - [Instrucciones dentro del gestor de BBDD](#Instrucciones-dentro-del-gestor-de-BBDD)
 
 
@@ -32,7 +31,7 @@
     - [Control de Acceso](#Control-de-Acceso)
     - [Control de acceso a nivel de carpeta (.htaccess)](#Control-de-acceso-a-nivel-de-carpeta-(.htaccess))
     - [Configuración de SSL (Secure Sockets Layer) en apache](#Configuración-de-SSL-(Secure-Sockets-Layer)-en-apache)
-    - [Más cosas de seguridad](#Más-cosas-de-seguridad)
+
 
 
 # Instalación de Apache en Centos
@@ -371,6 +370,8 @@ sudo yum install unzip
 
 # Simular distintas webs soportadas por el mismo servidor
 
+## Configurar las carpetas y archivos de las webs
+
 - Salir de ssh
 - Entrar en Descargas
 - Y descargar el archivo del aula virtual en el directorio
@@ -546,6 +547,7 @@ sudo firewall-cmd --reload
 ```
 - Si añadimos esta nueva IP con puerto a hosts podremos generar un acceso.
 ---
+
 # Instalación de PHP y sus configuraciones
 
 - Comporbar que modulos tenemos instalados:
@@ -638,7 +640,7 @@ servidor/phpmyadmin
 
 - Devolvemos el archivo "ifcfg-enp0s3" a como lo teniamos antes de instalar PHP.
 
-# Añadir una página de PHP con BBDD
+## Añadir una página de PHP con BBDD
 - Creamos un archivo php en:
 ```
 sudo nano /var/www/clientes/index.php
@@ -1055,4 +1057,3 @@ clientes.com
 
 - Solo con poner lo anterior se genera el https automaticamente 
 
-## Más cosas de seguridad
