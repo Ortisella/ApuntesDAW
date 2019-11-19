@@ -10,7 +10,6 @@
     1. Agregar el certificado al servidor
 1. [Más cosas de seguridad](#per-a-el-https)
 
-
 ## AUTENTICACIÓN BÁSICA
 1. Crear una página en la página de (clientes en aquest cas) y crear un primera página
 1. Crear un arxiu amb les contrasenyes: `sudo htpasswd -c /etc/httpd/password/passwords-admin admin`
@@ -111,17 +110,17 @@ Nota: ** si fa falta instal·lar-lo: ```sudo yum install openssl``` **
     + Ubuntu
       * `sudo cp certificado.crt /etc/ssl/certs`
       * `sudo cp certificado.key /etc/ssl/private`
-1. Modificar /etc/httpd/conf.d/ssl.conf per a indicar on estan el arxius, buscar (^W) **SSLCertificateFile** i **SSLCertificateKeyFile**.
+1. Modificar `/etc/httpd/conf.d/ssl.conf` en **centos** o `/etc/apache2/sites-available/default-ssl.conf` en **ubuntu** per a indicar on estan el arxius, buscar (^W) **SSLCertificateFile** i **SSLCertificateKeyFile**.
 1. Obrir el port :
   * Centos
     * `sudo firewall-cmd --zone=public --add-service=https --permanent`
     * Recargar el firewall: `sudo firewall-cmd --reload`
   * Ubuntu
+    * `sudo ufw allow https`
     * Recargar el firewall: `sudo ufw reload`
 1. Afegir a la configuracio de la pag: 'Redirect / https://clientes.com' per a que redireccione per https
 
-
-## PER A EL HTTPS
+1. Afegir `SSLEngine on`, `SSLCertificateFile <dir .crt>` i `SSLCertificateKeyFile <dir .key>`. El virtual host ha de quedar algo així:
 ```
 <VirtualHost *:443>
    DocumentRoot /var/www/trabajadores
