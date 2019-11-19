@@ -365,4 +365,4 @@ FLUSH PRIVILEGES;
 exit;
 ```
 
-### ahora nos deberia dejar entrar en phpmyadmin
+### ahora nos debería dejar entrar en phpmyadmin
