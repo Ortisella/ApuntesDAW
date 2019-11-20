@@ -24,6 +24,13 @@
   2. http cortado: `sudo firewall-cmd --zone=public --add-service=http --permanen`
   (para cualquier de estos cambios hace falta recargar el *firewall*: `sudo firewall-cmd --reload`
 
+  1. Afegir un port `firewall-cmd --zone=public --add-port=<port>/tcp `
+  1. Problemes amb els ports:
+      * `sudo yum -y install policycoreutils-python`
+      * `sudo semanage port -a -t http_port_t -p tcp <port>`. Si ja està i dona error (already defined): `sudo semanage port -m -t http_port_t -p tcp <port>`
+
+      * https://stackoverflow.com/questions/17079670/httpd-server-not-started-13permission-denied-make-sock-could-not-bind-to-ad
+
 # FUNCIONAMIENTO BÁSICO DE APACHE (HTTPD)
 
 ### Comándos útiles
@@ -84,9 +91,11 @@
  * Canviar:
    * BOOTPROTO a static
  * Afegir:
-     * IPADDR a la adressa IP actual
-     * NETMASK amb \24
+     * IPADDR a la adressa IP actual (si hi ha més d'una IPADDR1, IPADDR2, etc)
+     * NETMASK amb 255.255.255.0
      * GATEWAY amb 192.168.1.2
+
+* Recargar la configuració: `/etc/init.d/network restart`
 
 ## AFEGIR UNA WEB A UN DOMINI NOU
 1. Crear un nou directori a la carpeta /var/www/
