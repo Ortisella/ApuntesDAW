@@ -13,6 +13,7 @@
     - [Asignar la misma IP para cada web](#Asignar-la-misma-IP-para-cada-web)
     - [Asignar 1 IP distinta para cada web (En caso de disponer de 2 IPS)](#Asignar-1-IP-distinta-para-cada-web-(En-caso-de-disponer-de-2-IPS))
     - [Crear una página nueva con un puerto distinto en la misma IP](#Crear-una-página-nueva-con-un-puerto-distinto-en-la-misma-IP)
+    - [Ensites y Dissites](#Cuando-cambiamos-el-archivo-conf-de-un-sitio-que-ya-estaba-configurado-con-un-virtualhost-distinto-al-actual-hay-que-hacer-ensites-y-dissites-en-apache)
     
 - [CONFIGURAR LA SEGURIDAD DE APACHE](#Configurar-la-seguridad-de-apache)
     - [Autenticación básica](#Autenticación-básica)
@@ -350,6 +351,25 @@ sudo ufw reload
 
 - Si añadimos esta nueva IP con puerto a hosts podremos generar un acceso.
 ---
+
+## Cuando cambiamos el archivo conf de un sitio que ya estaba configurado con un virtualhost distinto al actual hay que hacer ensites y dissites en apache
+
+- Ejemplo
+
+```
+sudo a2disssite alumnos
+sudo systemctl reload apache2
+sudo a2disssite profesores
+sudo systemctl reload apache2
+```
+```
+sudo a2ensite alumnos
+sudo systemctl reload apache2
+sudo a2ensite profesores
+sudo systemctl reload apache2
+```
+
+----
 
 # Configurar la seguridad de apache
 

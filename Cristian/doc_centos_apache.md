@@ -19,6 +19,7 @@
     - [Asignar la misma IP para cada web](#Asignar-la-misma-IP-para-cada-web)
     - [Asignar 1 IP distinta para cada web (En caso de disponer de 2 IPS)](#Asignar-1-IP-distinta-para-cada-web-(En-caso-de-disponer-de-2-IPS))
     - [Crear una página nueva con un puerto distinto en la misma IP](#Crear-una-página-nueva-con-un-puerto-distinto-en-la-misma-IP)
+    - [Ensites y Dissites](#Cuando-cambiamos-el-archivo-conf-de-un-sitio-que-ya-estaba-configurado-con-un-virtualhost-distinto-al-actual-hay-que-hacer-ensites-y-dissites-en-apache-si-nos-da-error)
 
 - [INSTALACIÓN DE PHP Y SUS CONFIGURACIONES](#Instalación-de-PHP-y-sus-configuraciones)
     - [Añadir una página de PHP con BBDD](#Añadir-una-página-de-PHP-con-BBDD)
@@ -238,24 +239,6 @@ ll
 - En modules para acceder a los modulos.
 
 ## Colocar la IP generada por el puerto como estática para que siempre sea la misma
-```
-sudo nano /etc/sysconfig/network-scripts/ifcfg-enp0s3
-```
-- Cambiar BOOTPROTO de DHPC A static
-- Crear una linea con IPADDR=(ip generada por el puerto)
-- Crear una linea con NETMASK=(con la mascara generada por el puerto)(255.255.255.0)
-- Crear una linea con GATEWAY=192.168.1.1
-- Crear una linea con DNS1=8.8.8.8
-- Crear una linea con DNS2=8.8.4.4
-- Reiniciar el servidor para volver a ver la IP que genera y debería ser la misma siempre
-
------------------------
-
-Para revisar que los archivos de configuración estén bien:
-```
-sudo apachectl configtest
-```
-
 ---------------
 ### Instalación de nano 
 ```
@@ -267,6 +250,25 @@ sudo yum install nano
 sudo nano /etc/httpd/conf/httpd.conf
 ```
 -----
+
+```
+sudo nano /etc/sysconfig/network-scripts/ifcfg-enp0s3
+```
+- Cambiar BOOTPROTO de DHPC A static
+- Crear una linea con IPADDR=(ip generada por el puerto)
+- Crear una linea con NETMASK=(con la mascara generada por el puerto)(255.255.255.0)
+- Crear una linea con GATEWAY=192.168.1.2 (1 para casa)
+- Crear una linea con DNS1=8.8.8.8
+- Crear una linea con DNS2=8.8.4.4
+- Reiniciar el servidor para volver a ver la IP que genera y debería ser la misma siempre
+
+-----------------------
+
+Para revisar que los archivos de configuración estén bien:
+```
+sudo apachectl configtest
+```
+----
 
 
 # Añadir un nombre a la IP del servidor en los hosts
@@ -312,38 +314,30 @@ servidor:3333
 
 ## En caso de que las IPs sean iguales
 
-- Añadir en el archivo hosts la ip proporcionada por el puente con el nombre que nosotros queramos tanto en el servidor como en local.
+- Añadir en el archivo hosts de local la ip proporcionada por el puente con el nombre que nosotros queramos.
 
-```
-sudo nano /etc/hosts
-
-(ip generada) servidor
-```
-- Salir del servidor:
 ```
 exit
-```
 
-```
 sudo nano /etc/hosts
 
-(ip generada) servidor
+(ip generada) nombre
 ```
 
 - Entrar en el servidor desde local:
 ```
-ssh cristian@ (nombre especificado en el hostname o la ip generada por el puente)
+ssh cristian@ (nombre especificado en hosts o la ip generada por el puente)
 ```
 
 - Ya podriamos acceder al servidor desde el navagador local con el nombre del host que hayamos puesto en la direccion generada por el puente de envios.
 ```
-servidor/
+nombre/
 ```
 
 -------------------------------------------
 # Tratamiento del contenido del servidor con FileZilla
 
-- Instalar filezilla
+- Instalar filezilla en local
 ```
 sudo apt install filezilla
 ```
@@ -373,26 +367,46 @@ sudo yum install unzip
 ## Configurar las carpetas y archivos de las webs
 
 - Salir de ssh
+
 - Entrar en Descargas
+
+```
+cd Descargas
+```
+
 - Y descargar el archivo del aula virtual en el directorio
-- Una vez lo tengamos en Descargas ejecutar la siguiente intrucción para copiar por ssh el archivo establecemos la ruta del servidor (ojo, lo normal es no tener la carpeta creada de Descargas): 
+
+- Una vez lo tengamos en Descargas ejecutar la siguiente intrucción (estando conectados a Filezilla) para copiar por ssh. (ojo, lo normal es no tener la carpeta creada de Descargas en el servidor): 
+
 ```
 scp ./web_daw.zip cristian@servidor:/home/cristian/Descargas/web_daw.zip
 ```
-- Cambiar el tiempo de espera de conexión de FIlezilla desde Edición opciones a uno superior
-- Conectar el Filezilla al servidor
-- Descomprimir el archivo con unzip
+
+- Otra opción es arrastrar directamente el archivo a la carpeta en Filezilla.
+
+- Cambiar el tiempo de espera de conexión de FIlezilla desde Edición opciones a uno superior si no nos funciona
+
+
+- Entrar al servidor y descomprimir el archivo con unzip
+
+```
+ssh cristian@nombre
+
+cd Descargas
+
+sudo unzip web_daw.zip
+```
 
 - A continuación creamos 2 carpetas en el servidor para cada web en la carpeta dedicada a webs
+
 ```
-ssh cristian@(ip generada)
 sudo mkdir /var/www/clientes
 sudo mkdir /var/www/proveedores
 ```
 
-- Ahora copiamos el contenido la web que hemos pasado y descomprimido previamente a cada una de las dos carpetas
+- Ahora copiamos el contenido la web que hemos pasado y descomprimido previamente a cada una de las dos carpetas (Estando en Descargas)
+
 ```
-cd Descargas
 sudo cp -R web_daw/* /var/www/clientes/
 sudo cp -R web_daw/* /var/www/proveedores/
 ```
@@ -443,27 +457,40 @@ ll /var/www/proveedores/
 
  - Añadimos las IPS (previamente compradas) para clientes y proveedores, pero como solo tenemos la del servidor pues ponemos esa para los 2
  ```
-192.168.1.181 clientes.com
-192.168.1.181 proveedores.com
+192.168.1.181 (ip generada) clientes.com
+192.168.1.181 (ip generada) proveedores.com
  ```
 
- - Y reiniciamos apache
+ - Entramos al servidor y reiniciamos apache
+
+ ```
+ ssh cristian@nombre
+ sudo apachectl restart
+ ```
 
  - Ahora ya podemos acceder a cada web por sus accesos en el navegador
+
  ```
  clientes.com
  proveedores.com
  ```
 ------
+
 ## Asignar 1 IP distinta para cada web (En caso de disponer de 2 IPS)
+
 - Cerramos la maquina virtual
+
 - Añadirmos otro adaptador puente en el virtualBox desde la configuracion web
+
 - Volvemos a iniciar la máquina virtual
 
 - Vemos que IPS nos ha generado
+
 ```
 ip addr show
 ```
+
+- ( Podemos hacer estática esta segunda IP, si queremos )
 
 - Cambiamos el archivo VirtualHost para poner un ip distinta a cada una
 ```
@@ -497,7 +524,7 @@ exit
 sudo nano /etc/hosts
 ```
 
-- Y ponemos que una de ellas apunte a la ultima IP generada
+- Ahora ya podemos acceder a las páginas por sus respectivas IPs y nombres.
 
 -----
 
@@ -546,6 +573,32 @@ sudo firewall-cmd --reload
 192.168.1.181:8080
 ```
 - Si añadimos esta nueva IP con puerto a hosts podremos generar un acceso.
+
+---
+
+### Problemas con los puertos
+
+- Centos solo tiene una serie de puertos disponibles para que podamos asignar, si por casualidad le asignamos uno y no nos deja actualizar apache  seguir los siguientes pasos:
+
+```
+sudo yum -y install policycoreutils-python
+```
+
+```
+sudo semanage port -a -t http_port_t -p tcp (puerto)
+```
+
+- Si nos da error con la ultima poner:
+
+```
+sudo semanage port -m -t http_port_t -p tcp (puerto)
+```
+
+- Reiniciar apache.
+
+```
+sudo apachectl restart
+```
 ---
 
 # Instalación de PHP y sus configuraciones
@@ -556,20 +609,8 @@ sudo firewall-cmd --reload
 httpd -M
 ```
 
-- Primero cambiar este archivo a como lo teniamos anteriormente:
-```
-sudo nano /etc/sysconfig/network-scripts/ifcfg-enp0s3
-```
+Si nos da cualquier error de mirrors al instalar lo de a continuación, dejar el archivo enp03 a como lo teniamos inicialmente, actualizar la red, descargar todo esto, y volver a cambiarlo a como lo tenemos ahora y actualizar la red.
 
-- Cambiar el Gateway a:
-```
-GATEWAY=192.168.1.2
-```
-
-- Reiniciar la red (Si ha generado una red distinta, habra que cambiarla de todos los sitios): 
-```
-sudo service network restart
-```
 
 - Instalar este repositorio:
 
@@ -637,10 +678,8 @@ sudo apachectl restart
 servidor/phpmyadmin
 ```
 
-
-- Devolvemos el archivo "ifcfg-enp0s3" a como lo teniamos antes de instalar PHP.
-
 ## Añadir una página de PHP con BBDD
+
 - Creamos un archivo php en:
 ```
 sudo nano /var/www/clientes/index.php
@@ -674,8 +713,6 @@ sudo yum install mariadb mariadb-server
 ```
 sudo systemctl status mariadb
 ```
-
-- Si ocurre lo de los espejos, volver a colocar el BOOTPROTO  dhcp temporalmente en el archivo enp0s3
 
 - Ponemos en marcha la base de datos
 ```
@@ -722,7 +759,9 @@ quit
 -----
 
 # Configurar la seguridad de apache
+
 ## Autenticación básica
+
 - Imaginamos que tenemos páginas que solo pueden ver personas autorizadas
 
 - Creamos otra página en la web de clientes en la que solo pueda acceder el administrador 
@@ -1025,6 +1064,26 @@ sudo firewall-cmd --zone=public --add-service=https --permanent
 - Reiniciamos el firewall
 ```
 sudo firewall-cmd --reload
+```
+
+- Añadirmos el puerto 443 a la configuración del usuario:
+
+```
+sudo nano /etc/httpd/conf.d/clientes.conf
+
+<VirtualHost *:443>
+    DocumentRoot /var/www/clientes
+    ServerName alumnos.com
+    SSLEngine On
+    SSLCertificateFile /etc/ssl/certs/certificado.crt
+    SSLCertificateKeyFile /etc/ssl/private/certificado.key
+</VirtualHost>
+```
+
+- Reiniciamos apache:
+
+```
+sudo apachectl restart
 ```
 
 - Accedemos por https a la página:
