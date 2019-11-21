@@ -44,6 +44,20 @@
         - [Control de acceso](#control-de-acceso)
         - [Control de acceso a nivel de carpeta](#control-de-acceso-a-nivel-de-carpeta)
         - [Configuración de SSL](#configuración-de-ssl)
+- [UBUNTU SERVER](#ubuntu-server)
+    - [Instalación en entorno de virtualización](#instalación-en-entorno-de-virtualización)
+    - [Configuración de la IP estática](#configuración-de-la-ip-estática)
+    - [Instalación de Apache](#instalación-de-apache)
+    - [Creación de páginas web](#creación-de-páginas-web)
+    - [Acceder a las webs por IPs distintas](#acceder-a-las-webs-por-ips-distintas)
+    - [Acceder a las webs por puertos distintos y misma IP](#acceder-a-las-webs-por-puertos-distintos-y-misma-ip)
+    - [Añadir página administración con acceso user/pass](#añadir-página-administración-con-acceso-user/pass)
+    - [Carpeta con archivo y activación de indexado](#carpeta-con-archivo-y-activación-de-indexado)
+    - [Restringir acceso a carpeta con htaccess](#restringir-acceso-a-carpeta-con-htaccess)
+    - [Configuración para acceso sólo por https](#configuración-para-acceso-sólo-por-https)
+    - [Instalación de PHP](#instalación-de-php)
+    - [Instalación de MariaDB](#instalación-de-mariadb)
+
     
 ---
 ---
@@ -906,10 +920,420 @@ Guardamos y reiniciamos el servidor:
 sudo apachectl restart
 ```
 
+## Ubuntu Server
 
+### Instalación en entorno de virtualización
 
+Bajamos Ubuntu Server 18.04 en su versión minimal. En la instalación, marcamos instalar OpenSSH Server sin poner ningún paquete. En VirtualBox, cambiamos la configuración de red (Configuración >> Red) de NAT a _adaptador puente_ y entonces el servidor nos generará una IP válida. 
 
+Para entrar en Ubuntu server desde la terminal de Linux escribimos: 
+```
+sudo  ssh {nombre del usuario en ubuntu server}@{IP del servidor}
+```
 
+### Configuración de IP estática
+
+Para ver la IP escribimos:
+```
+ip addr show
+```
+
+Para ver la configuración: 
+```
+ll /etc/netplan/
+```
+
+Entramos en:
+```
+sudo nano /etc/netplan/50-cloud-init.yaml
+```
+y cambiamos:
+>comentamos dhcp4: true  
+>añadimos después:  
+>addresses: [192.168.1.173/24] {nuestra IP}
+>gateway4: 192.168.1.2
+>dhcp4: no
+>nameservers:  
+>{identado} addresses: [8.8.8.8, 8.8.4.4]  
+>optional: true  
+
+Guardamos y reiniciamos la red con la nueva configuración:
+```
+sudo netplan apply
+```
+En la terminal local entramos en hosts y añadimos nuestra IP y le damos un nombre: 
+```
+sudo nano /etc/hosts
+_________
+192.168.1.173 ubuntu-server
+```
+Ahora podremos entrar en el servidor con {nombre de usuario en el servidor}@ubuntu-server
+
+Para ver el estado del firewall escribimos:
+```
+sudo ufw status
+```
+
+Activamos el firewall:
+```
+sudo ufw enable 
+```
+y pulsamos que sí. 
+
+Para ver más información escribimos:
+```
+sudo status verbose
+```
+
+Para ver un lista de las aplicaciones o módulos permitidas en el firewall:
+```
+sudo ufw app list
+```
+
+### Instalación de Apache
+
+Para instalar Apache: 
+```
+sudo apt install apache2
+```
+
+Para ver el estado de Apache, viendo que se habilita y se pone en marcha automáticamente: 
+```
+systemctl apache2 status
+```
+
+Si tuvieramos que habilitarlo manualmente es igual que CentOS:
+```
+sudo apachectl stop
+ó
+sudo apachectl start
+```
+
+Ahora tenemos que abrir el puerto en el firewall:
+```
+sudo ufw allow 'Apache'
+```
+Si ahora volvemos a hacer un ```sudo ufw status``` que ya está permitido.
+
+Ahora, en el navegador ponemos la IP y nos sale la página de inicio de Apache.
+
+Para ver las características del servidor:
+```
+cat /etc/* -release
+```
+
+Para instalar el manual y verlo después en el navegador escribiendo en él {ip}/manual:
+```
+sudo apt install apache2-doc
+```
+
+Vemos los permisos de los archivos en: 
+```
+ll /etc/apt
+```
+
+Para ver todos los archivos que hay en Apache:
+```
+ll /etc/apache2
+```
+El archivo principal de configuración es ```apache2.conf```. Aquí también podemos encontrar parejas de directorios. En ```available``` están las configuraciones que creamos. En ```enabled``` están los archivos activos que sirve el servidor. 
+
+Para ver las páginas que tiene el servidor:
+```
+ll /var/www
+```
+
+### Creación de páginas web
+
+En Filezilla creamos un nuevo sitio con ```nuestra IP```, ```puerto 22```, ```SFTP``` y ```acceso normal```. Si no va, al firewall le añadimos OpenSSH abriendo el puerto 22 con:
+```
+sudo ufw allow 'OpenSSH' 
+```
+
+Instalamos unzip: ```sudo apt install unzip```
+
+Pasamos los archivos y creamos dentro la web, por ejemplo, "alumnos": 
+```
+{dentro de web-daw en la terminal del servidor}
+sudo mkdir /var/www/alumnos
+```
+Copiamos los archivos de la carpeta donde estoy a alumnos:
+```
+sudo cp -R . /var/www/alumnos/
+```
+Editamos la web y guardamos:
+```
+sudo nano /var/www/alumnos/index.html
+```
+
+Añadimos en el archivo de configuración:
+```
+sudo nano /etc/apache2/sites-available/alumnos.conf
+```
+><VirtualHost *:80>  
+>{4 espacios}ServerName alumnos.com  
+>{4 espacios}DocumentRoot /var/www/alumnos
+></VirtualHost>
+
+Activamos la página en la carpeta enable:
+```
+sudo a2ensite alumnos
+systemctl reload apache2
+```
+
+Abrimos terminal en local y añadimos el dominio a la IP:
+```
+sudo nano /etc/hosts
+______________
+{ip} alumnos.com
+```
+
+Reiniciamos Apache:
+```
+sudo systemctl reload apache2
+```
+
+Ahora podemos ver la web escribiendo en el navegador ```alumnos.com```. Si tenemos problemas limpiamos la cache de firefox con ```ctrl+F5```.
+
+Para deshabilitar el sitio y quitarlo de la carpeta sites-enabled:
+```
+sudo a2dissite alumnos
+```
+
+### Acceder a las webs por IPs distintas
+
+Configuramos la IP estática como hecho en el apartado anterior. Comentamos lo de después del true y añadimos:
+>enpOS8:
+>{4 espacios}dhcp4:true
+>{antes de version: 2}
+y reiniciamos la red ```sudo systemctl reload apache2```
+
+Vemos la segunda IP con ```ip addr show``` 
+
+Entramos al archivo de configuración de profesores y en el virtualhost ponemos la IP: 80
+```
+sudo nano /etc/apache2/sites-available/profesores.conf
+```
+Activamos la página en la carpeta _enable_:
+```
+sudo a2ensite profesores
+systemctl reload apache2
+```
+
+### Acceder a las webs por puertos distintos y misma IP
+
+En el archivo de configuración de profesores volvemos a poner nuestra IP y un puerto nuevo: 
+```
+sudo nano /etc/apache2/sites-available/profesores.conf
+```
+>Listen 8008  
+><VirtualHost 192.168.1.186: 8008>  
+>...
+
+Activamos la página en la carpeta _enable_:
+```
+sudo a2ensite profesores
+systemctl reload apache2
+```
+
+Abrimos el puerto en el firewall: 
+```
+sudo ufw allow 8008
+```
+
+### Añadir página administración con acceso user/pass
+
+Se hace mediante la configuración básica. 
+
+Se crea un dominio como en el apartado [Creación de páginas web](#creación-de-páginas-web):
+```
+sudo mkdir /var/www/profesores/admin
+sudo nano /var/www/profesores/admin/index.html
+```
+y dentro escribimos "Página restringida a admins". Recargamos con:
+``` 
+systemctl reload apache2
+```
+Creamos una carpeta para guardar contraseñas: 
+```
+sudo mkdir /etc/apache2/password
+```
+y dentro creamos un archivo para las contraseñas:
+```
+sudo htpasswd -c /etc/apache2/password/passwords-admin admin
+```
+Pedirá contraseña para ese usuario y ponemos ```admin```.
+
+Restringimos el acceso a la página administradores:
+```
+sudo nano /etc/apache2/sites-available/profesores.conf
+```
+><Directory "/var/www/profeores/admin">  
+>{4 espacios}AuthType Basic  
+>{4 espacios}AuthName "Administrador"  
+>{4 espacios}AuthUserFile /etc/apache2/password/passwords-admin  
+>{4 espacios}Require valid-user  {o Require user admin}  
+>< /Directory> {sin el espacio}
+
+Para ver que lo he escrito todo bien en el documento:
+```
+sudo apachectl configtest
+```
+Y reiniciamos Apache con:
+```
+sudo apachectl restart apache2
+```
+
+### Carpeta con archivo y activación de indexado
+
+Creamos la carpeta y el archivo: 
+```
+sudo mkdir /var/www/profesores/secret-files
+sudo nano /var/www/profesores/secret-files/secret-text.txt
+```
+Activamos el indexado con el archivo de configuración de profesores: 
+```
+sudo nano /etc/apache2/sites-available/profesores.conf
+```
+y añadimos el directorio:
+><Directory "/var/www/profesores/secret-files">  
+>{4 espacios}AllowOverride all  
+>{4 espacios}Options Indexes  
+>< /Directory>  {sin el espacio}
+
+Comprobamos que funciona accediendo en el navegador a profesores.com/secret-files y vemos el directorio
+
+### Restringir acceso a carpeta con htaccess
+
+Para restringir que se vea lo que hay en la carpeta:
+```
+sudo nano /var/www/profesores/secret-files/.htaccess
+```
+y escribimos dentro ```Require all denied``` sin poner nada más. 
+
+Comprobamos que funciona poniendo en el navegador profesores.com/secret-files y aparece el __error 403__.
+
+### Configuración para acceso sólo por https
+
+Se trata de usar la configuración de SSL. En Ubuntu Server no es necesario instalar el módulo SSL porque viene instalado por defecto con Apache, pero hay que activarlo: 
+```
+sudo a2enmod ssl
+```
+y reiniciamos Apache con:
+```
+systemctl restart apache2
+```
+No es necesario instalar OpenSSL, pero si no lo estuviera, se instala con: 
+```
+sudo apt install openssl
+```
+La ruta de los certificados en Ubuntu Server es ```/etc/ssl/```
+
+Generamos una clave privada: 
+```
+openssl genrsa -out certificado.key 2048
+{certificado es el nombre para el archivo}
+{2048 es la fuerza de la protección}
+```
+Creamos el archivo __csr__, la clave privada: 
+```
+openssl req -new -key certificado.key -out certificado.csr
+{En el código del país escribimos ES y vamos rellenando}
+```
+Creamos un __crt__:
+```
+openssl x509 -req -days 90 -in certificado.csr -signkey certificado.key -out certificado.crt
+```
+Con ```ll``` vemos todos los certificados que tenemos.
+
+Ahora copiamos los certificados:
+```
+sudo cp certificado.crt /etc/ssl/certs
+sudo cp certificado.key /etc/ssl/private
+```
+
+En el archivo de configuración de profesores: 
+```
+sudo nano /etc/apache2/sites-available/profesores.conf
+```
+><VirtualHost *:443>  
+>{4 espacios}ServerName profesores.com  
+>{4 espacios}DocumentRoot /var/www/profesores  
+>{4 espacios}SSLEngine On  
+>{4 espacios}SSLCertificateFile /etc/ssl/certs/certificado.crt  
+>{4 espacios}SSLCertificateKeyFile /etc/ssl/private/certificado.key  
+>< /VirtualHost>   {sin el espacio}
+
+Para redirect, añadimos en el virtualhost: 
+>{4 espacios}Redirect permanent /https://profesores.com
+
+Configuramos el archivo ssl para que sepa dónde están los certificados:
+```
+sudo nano /etc/apache2/sites-available/default-ssl.conf
+```
+Cambiamos la ruta del SSLCertificateFile a la ruta del crt y SSLCertificateKeyFile a la ruta del key. Guardamos y reiniciamos apache con:
+```
+systemctl restart apache2
+```
+
+Abrimos el puerto 443 con:
+```
+sudo ufw enable
+```
+Activamos Apache Full para activar el https:
+```
+sudo ufw allow 'Apache Full'
+```
+Si no conecta con el servidor, ponemos nuestra IP para el dominio que toca en ```sudo nano /etc/hosts```.
+
+### Instalación de PHP
+
+Instalamos con:
+```
+sudo apt install php libapache2-mod-php php-mysql
+```
+
+Para ver la versión de PHP instalada: ```php-v```
+Añadimos una página de php:
+```
+suudo nano /var/www/html/index.php
+```
+Dentro escribiremos ```<?php phpinfo(); ?>```
+y reiniciamos el servidor con ```sudo systemctl restart apache2```
+
+Lo comprobamos en el navegador con {ip del servidor}/index.php
+
+### Instalación de MariaDB
+
+Se instala con:
+```
+sudo apt install mariadb-server
+```
+Damos a todo que sí, la contraseña que pide al principio es vacía pero luego sí escribimos una... al configurar la seguridad con:
+```
+sudo mysql_secure_installation
+```
+
+Para comprobar las bases de datos existentes
+```
+sudo mysql -u root -p
+show DATABASES;
+{para salir escribimos quit}
+```
+
+Instalamos phpmyadmin:
+```
+sudo apt install phpmyadmin
+```
+Le damos a configuración de apache2 y que NO queremos configurar mannualmente. 
+
+```
+sudo ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
+
+sudo ln -s /etc/apache2/conf-available/phpmyadmin.conf /etc/apache2/conf-enabled/phpmyadmin.conf
+
+sudo apachectl restart
+```
 
 
 
