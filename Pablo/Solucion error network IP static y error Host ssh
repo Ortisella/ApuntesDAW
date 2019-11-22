@@ -1,0 +1,5 @@
+En Casa no hay internet cuando pongo ip statica porque el gateway debe ser 1.1, en clase debe ser 1.2 para que funcione internet
+
+ssh-keygen -f "/home/pablo/.ssh/known_hosts" -R "192.168.1.20"//Borrar una ip de conocidas para poder conectarse con esa ip por ssh
+
+Al usar un control de acceso en una carpeta de www no aparece forbidden aparece la pagina de default, indica lo mismo

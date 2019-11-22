@@ -17,6 +17,7 @@
     
 - [CONFIGURAR LA SEGURIDAD DE APACHE](#Configurar-la-seguridad-de-apache)
     - [Autenticación básica](#Autenticación-básica)
+    - [Autenticación Digest](#Autenticación-Digest)
     - [Control de Acceso](#Control-de-Acceso)
     - [Control de acceso a nivel de carpeta (.htaccess)](#Control-de-acceso-a-nivel-de-carpeta-(.htaccess))
     - [Configuración de SSL (Secure Sockets Layer) en apache](#Configuración-de-SSL-(Secure-Sockets-Layer)-en-apache)
@@ -33,6 +34,7 @@
 - Marcar el OpenSSH para instalarlo junto al SO
 
 ## Adaptador puente
+
 - Ir a la configuración red de VirtualBox y marcar adaptador puente.
 
 - Entonces el servidor ya nos genera una IP válida en 192.168.1
@@ -166,6 +168,7 @@ sudo unzip web_daw.zip
 -----
 
 ## Configurar las carpetas y archivos de las webs
+
 - Creamos carpeta:
 
 ```
@@ -186,6 +189,8 @@ sudo cp -R . /var/www/alumnos
 sudo nano /var/www/alumnos/index.html
 ```
 
+- Hacemos lo mismo con una web de profesores
+
 
 ## Asignar la misma IP para cada web
 - Creamos el archivo de configuracion
@@ -201,6 +206,8 @@ sudo nano /etc/apache2/sites-available/alumnos.conf
 
 - Hacemos un enlace de sites-available a sites-enabled:
 ```
+sudo systemctl reload apache2
+
 sudo a2ensite alumnos
 ```
 
@@ -233,7 +240,7 @@ sudo nano /etc/hosts
 
 - Volvemos a iniciar la máquina virtual
 
-- Configuramos para que los dos adaptadores generen la IP por dhcp:
+- Configuramos para que el adaptador genere la IP por dhcp:
 
 ```
 sudo nano /etc/netplan/50-cloud-init.yaml
@@ -249,13 +256,20 @@ network:
     version: 2
 ```
 
+- Realmente no hace falta volver a pasar a dhcp en enp0s3
+
+- Reiniciamos la red
+
+```
+sudo netplan apply
+```
 
 - Vemos que IPS nos ha generado
 ```
 ip addr show
 ```
 
-- Despues de comprobar las IPS podemos configurar el mimso archivo para dejarlas como estaticas
+- Despues de comprobar las IPS podemos configurar el mismo archivo para dejarlas como estaticas
 (Arriba sale como hacerlas estáticas)
 
 - Cambiamos el archivo VirtualHost para poner un ip distinta a cada una
@@ -278,18 +292,22 @@ sudo nano /etc/apache2/sites-available/profesores.conf
 ```
 
 - Despues reubicar los sites:
+
 ```
-sudo a2disssite alumnos
 sudo systemctl reload apache2
-sudo a2disssite profesores
+sudo a2dissite alumnos
+sudo systemctl reload apache2
+sudo a2dissite profesores
 sudo systemctl reload apache2
 ```
 ```
+sudo systemctl reload apache2
 sudo a2ensite alumnos
 sudo systemctl reload apache2
 sudo a2ensite profesores
 sudo systemctl reload apache2
 ```
+
 - Despues limpiar la cache del navegador con CTR+F5
 
 - Ahora estan asignadas la ips en cada página y debemos cambiar el archivo hosts de local ya que lo teniamos configurado para que apuntaran a la misma
@@ -382,7 +400,7 @@ sudo systemctl reload apache2
 ```
 sudo mkdir /var/www/alumnos/admin
 
-sudo nano /var/www/clientes/admin/index.html
+sudo nano /var/www/alumnos/admin/index.html
 ```
 - Y ponemos algo dentro para identificarla
 
@@ -415,11 +433,12 @@ sudo nano /etc/apache2/sites-available/alumnos.conf
 
 - Ponemos:
 ```
-<Directory "/var/www/clientes/admin">
+<Directory "/var/www/alumnos/admin">
     AuthType Basic
     AuthName "Administrador"
-    AuthUserFile /etc/httpd/password/passwords-admin
-    Require valid-user 
+    AuthUserFile /etc/apache2/password/passwords-admin
+    Require valid-user
+    # Require user admin
 </Directory>
 ```
 
@@ -444,6 +463,58 @@ o
 clientes.com(con puerto si hay)/admin
 ```
 
+## Autenticación Digest
+
+- Habilitamos Digest
+
+```
+sudo a2enmod auth_digest
+
+sudo systemctl restart apache2
+```
+
+- Creamos una nueva carpeta en alumnos
+
+```
+sudo mkdir /var/www/alumnos/digest
+```
+
+- Añadimos un html con algo dentro reconocible
+
+```
+sudo nano /var/www/alumnos/digest/index.html
+```
+
+- Crear usuario en el grupo digest
+
+```
+sudo htdigest -c /etc/apache2/password/digest "gestiones" admin
+```
+
+- Recordemos que el -c solo se pondra la vez en la que se crea el archivo, cuando añadamos otros usuarios no.
+
+- Modificamos el archivo de configuracion
+
+```
+sudo nano /etc/apache2/sites-available/alumnos.conf
+```
+
+```
+<Directory "/var/www/alumnos/gestion">
+    AuthType Digest
+    AuthName "gestiones" # Debe coincidir con el grupo de htdigest
+    AuthUserFile /etc/apache2/password/digest
+    Require user admin
+    #Require valid user
+</Directory>
+```
+
+- Reiniciar apache
+
+```
+sudo systemctl reload apache2
+```
+
 ## Control de Acceso
 
 - Podemos restringir el acceso por IPs o rangos de IPs
@@ -465,7 +536,7 @@ sudo nano /etc/apache2/sites-available/profesores.conf
 
 - Añadimos 
 ```
-<Directory "/var/www/clientes/gestion">
+<Directory "/var/www/profesores/gestion">
     <RequireAll>
         Require all denied
     </RequireAll>
@@ -515,7 +586,7 @@ sudo nano /etc/apache2/sites-available/alumnos.conf
 
 - Añadimos para ver el indexado:
 ```
-<Directory "/var/www/clientes/testhtaccess">
+<Directory "/var/www/alumnos/secret_files">
     AllowOverride All
     Options Indexes (solo funciona si no hay un index.html)
 </Directory>
