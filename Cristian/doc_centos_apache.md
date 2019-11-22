@@ -1116,3 +1116,7 @@ clientes.com
 
 - Solo con poner lo anterior se genera el https automaticamente 
 
+----
+# Añadir imagen
+
+![imagen](hola.jpg)
