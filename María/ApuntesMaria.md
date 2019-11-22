@@ -605,6 +605,19 @@ Relanzamos el firewall:
 sudo firewall-cmd --reload
 ```
 
+Si tenemos problemas con los puertos:
+```
+sudo yum -y install policycoreutils-python
+
+sudo semanage port -a -t http_port_t -p tcp <port>
+```
+Si ya está definido:
+```
+sudo semanage port -m -t http_port_t -p tcp <port>
+```
+Ver más en: https://stackoverflow.com/questions/17079670/httpd-server-not-started-13permission-denied-make-sock-could-not-bind-to-ad
+
+
 ### __Instalación SQL__
 
 Primero debemos instalar todas las dependencias para los paquetes de SQL Server:
