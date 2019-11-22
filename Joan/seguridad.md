@@ -12,7 +12,9 @@
 
 ## AUTENTICACIÓN BÁSICA
 1. Crear una página en la página de (clientes en aquest cas) y crear un primera página
-1. Crear un arxiu amb les contrasenyes: `sudo htpasswd -c /etc/httpd/password/passwords-admin admin`
+1. Crear un arxiu amb les contrasenyes:
+    * CENTOS: `sudo htpasswd -c /etc/httpd/password/passwords-admin admin`
+    * UBUNTU: `sudo htpasswd -c /etc/apache2/password/passwords-admin admin`
     * -c per a crear-lo, una vegada estiga creat no és necessari
 
 1. Cambiar la configuració de la pàgina (de la principal, no de la creada) i afegir:
@@ -130,3 +132,7 @@ Nota: ** si fa falta instal·lar-lo: ```sudo yum install openssl``` **
    SSLCertificateKeyFile /etc/pki/tls/private/certificado.key
 </VirtualHost>
 ```
+
+### ALTRES COSES
+
+1. Llistar els directoris
