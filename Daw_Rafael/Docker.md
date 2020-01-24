@@ -3,6 +3,8 @@
 # INDICE
 
 - [Ejercicio 3](Ejercicio3.md)
+- [Ejercicio 4](Ejercicio4.md)
+- [Ejercicio 5](Ejercicio5.md)
 
 ## Características
 - Tecnología de virtualización
@@ -168,7 +170,7 @@ exit
 docker container ls -a
 ```
 
-- Crar imagen del contenedor:
+- Crear imagen del contenedor:
 ```
 docker commit -m "actualizar" -a "yo" e297e4dc5d88 training/webapp:sp
 ```
@@ -285,3 +287,134 @@ docker start nombre_imagen
 
 -----------------
 
+# Redes
+
+## Comandos para gestionar redes en Docker
+
+- Crear una red:
+```
+docker network create -d bridge mired
+```
+
+- Borrar una red:
+```
+docker network rm
+```
+
+- Ver todas las opciones de red:
+```
+docker network --help
+
+    Resultado:
+        connect   name_driver name_container  Connect a container to a network
+        create      Create a network
+        disconnect  Disconnect a container from a network
+        inspect nombre_red    Display detailed information on one or more networks
+        ls          List networks
+        prune       Remove all unused networks
+        rm  nombre_red        Remove one or more networks
+```
+
+- Ver las interfaces de todas las redes:
+```
+ifconfig
+```
+
+- Ejecutar img en la red especificada:
+```
+docker run --rm -d --network=mired --name ejemplo -p 8080:80 rafael0507/daw-hola-mundo
+
+el --rm hará que si se para el contenedor se borrará automaticamente
+```
+
+- Installar curl si no lo tienes:
+```
+sudo apt install curl
+```
+
+- Ver si funciona:
+```
+curl localhost
+```
+
+- Ispecionar contenedor y buscar directamente un elemento:
+```
+docker container inspect ejemplo | grep "IPAddress"
+```
+
+- Red de tipo host:
+```
+docker run --rm -d --network=host --name ejemplo2 rafael0507/daw-hola-mundo
+```
+
+-----------------
+
+# Almacenamiento
+
+## Volumenes
+
+- Ver todas los comandos de los volumenes:
+```
+docker volume --help
+
+    Resultado:
+        create  nombre_volumen    Create a volume
+        inspect     Display detailed information on one or more volumes
+        ls          List volumes
+        prune       Remove all unused local volumes
+        rm          Remove one or more volumes
+```
+
+- Ver datos del volumen:
+```
+docker volume inspect name_volumen
+```
+
+- Ver todos los volumenes:
+```
+docker volume ls
+```
+
+- Borrar volumenes que no se estan usando:
+```
+docker volume prune
+```
+
+- Ver contendo del volumen creado:
+```
+sudo ls /var/lib/docker/volumes/datos/ -al
+sudo ls /var/lib/docker/volumes/datos/_data -al
+```
+
+- Enlazar volumen con contenedor:
+```
+docker run -d -p 80:5000 --name miweb -v datos:/opt/webapp training/webapp
+```
+
+- Modificar la imagen dentro del volumen:
+```
+sudo nano /var/lib/docker/volumes/datos/_data/app.py
+```
+
+- Si queremos que los cambios realizados en el volumen se vean tenemos que reiniciar la imagen:
+```
+docker restart miweb
+```
+
+## Volumenes Conectados(BIND)
+
+- Creamos un contenedor local:
+```
+docker run --rm -d -p 80:5000 --name miweb1 -v ~/miweb:/opt/webapp training/webapp
+```
+- Copiar el archivo:
+```
+docker cp miweb1:/opt/webapp/. ~/miweb1
+```
+
+- Crear el volumen y copiarlo directamente:
+```
+docker run --rm -d -p 80:5000 --name miweb -v ~/miweb:/opt/webapp training/webapp
+```
+
+-----------------
