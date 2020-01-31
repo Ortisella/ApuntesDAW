@@ -1,0 +1,135 @@
+nano DockerFile
+FROM training/webapp:latest
+MAINTAINER calaespi <victor.calatayud.espinosa@gmail.com>
+COPY app.py /opt/webapp/
+
+-----------
+nano app.py
+
+import os
+
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    provider = str(os.environ.get('PROVIDER', 'world'))
+    return 'Hello '+provider+'!'
+
+if __name__ == '__main__':
+    # Bind to PORT if defined, otherwise default to 5000.
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
+
+-----------
+Arranca un contenedor basado en una imagen
+docker run
+
+terminal, si no encuentra la imagen la descarga
+sudo docker run -i -t training/webapp /bin/bash
+
+-----
+construye la imagen
+docker build -t calaespi/webapp:spanish . 
+
+arrancar el server
+docker run -p 80:5000 calaespi/webapp:spanish 
+
+Si añadimos -d se ejecutara en segundo plano
+--name es el nombre del contenedor
+docker run -p 80:5000 --name miweb calaespi/webapp:spanish
+
+-----
+borrar todas las imagenes
+docker system prune
+
+-----
+Loguearte en docker
+docker login
+
+Subir un contenedor
+docker push calaespi/webapp:spanish
+
+Listar los contenedores
+docker container ls
+
+Listar los contenedores parados
+docker container ls -a
+
+Listar las imagenes
+docker image ls
+
+Parar el contendor
+docker stop miweb
+
+Iniciar el contenedor
+docker start miweb
+
+Reiniciar el contenedor
+docker restart miweb
+
+------
+Crea otro tag del contenedor
+docker tag 1fe92fba99b8(imagen id) calaespi/webapp:latest
+
+-----
+Iniciar Apache
+docker run httpd
+
+ver logs de apache. (apache porque he iniciado con ese nombre mi contenedor)
+docker container logs apache
+
+----
+Traer un contenedor 
+docker pull contenedor
+
+Ver info de un contenedor
+docker inspect contenedor
+
+----
+REDES
+Crear una red
+docker network create -d bridge mired
+
+Borrar una red
+docker network rm mired
+
+Ver listado de las redes
+docker network ls
+
+Ver caracteristicas de una red
+docker network inspect mired
+
+Arrancar una imagen en una red
+docker run -d --network=mired --name ejemplo -p 80:5000 calaespi/webapp
+docker run -d --network host --name ejemplo calaespi/webapp
+
+Conectar un contenedor a una red
+docker network connect bridge ejemplo
+
+----
+ALMACENAMIENTO 
+
+Copiar archivos de un contenedor a una carpeta local, tiene que estar el contenedor en marcha
+docker cp miweb2:/opt/webapp/. /home/victor/Proyectos/miweb
+
+VOLUMENES
+
+Crea un volumen
+docker volume create datos
+
+Inspecciona un volumen
+docker volume inspect datos
+
+Enlazar un contenedor con un volumen
+docker run -d -p 80:5000 --name miweb -v datos:/opt/webapp  calaespi/webapp
+
+VOLUMENES CONECTADOS (BIND)
+docker run -d -p 80:5000 --name miweb -v /home/victor/Proyectos/miweb:/opt/webapp  calaespi/webapp
+
+------
+consola iterativa
+
+docker exec -t miapache /bin/bash
+

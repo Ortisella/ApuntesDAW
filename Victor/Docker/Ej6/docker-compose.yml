@@ -1,0 +1,42 @@
+version: '3'
+services:
+  apachephp:
+    build: ./dockerfile
+    ports:
+      - 80:80
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - backend
+      - frontend
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - 8080:80
+    environment:
+      - PMA_HOST=mysql
+    networks:
+      - backend
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./sql:/data/application
+    command: --init-file /data/application/init.sql
+    environment:
+      - MYSQL_ROOT_USER=victor
+      - MYSQL_ROOT_PASSWORD=victor
+      - MYSQL_DATABASE=testdb
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=user
+    networks:
+      - backend
+
+networks:
+  backend:
+  frontend:
+  

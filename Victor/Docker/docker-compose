@@ -1,0 +1,99 @@
+Docker compose (para crear varios contenedores y servicios a la vez)
+
+Gestiona 3 tipos de componentes:
+- services (servicios): contenedores
+- networks (redes)
+- volumes (volumenes)
+
+docker-compose.yml
+
+version: '3'
+services:
+  odoo:
+    container_name: odoo
+    image: odoo:13.0
+    ports:
+      - 80:8069
+    volumes:
+      - ./modulos:/mnt/extra-addons
+    depends_on:
+      - db
+    networks:
+      - frontend
+      - backend
+
+  db:
+    container_name: db
+    image: postgres:10
+    environment:
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - POSTGRES_DB=postgres
+    volumes:
+      - database:/var/lib/postgresql
+    networks:
+      - backend
+
+volumes:
+  database:
+
+networks:
+  frontend:
+  backend:
+
+----
+Lanza los contenedores
+docker-compose up
+
+Lanzar en segundo plano
+docker-compose up -d
+
+Vuelve a crear los contenedores
+docker-compose up --force-recreate
+
+Parar contenedores
+docker-compose stop
+
+Los lanza si estan parados
+docker-compose start
+----
+
+version: '3'
+services:
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - 80:80
+    depends_on:
+      - mariadb
+    networks:
+      - frontend
+      - backend
+    environment:
+      - PMA_HOST=mariadb
+
+mariadb:
+  image: mariadb:latest
+  networks:
+    - backend
+  volumes:
+    - ./db:/var/lib/mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=admin
+    - MYSQL_USER=user
+    - MYSQL_PASSWORD=user
+
+networks:
+  frontend:
+  backend:
+
+----
+
+Usar docker-compose con Dockerfile
+version: '3'
+services:
+  <nombre>:
+    build: . o ./<carpeta>
+    command: <Comando a ejecutar en el contenedor>
+
+
